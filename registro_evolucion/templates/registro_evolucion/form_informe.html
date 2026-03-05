@@ -1,0 +1,682 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{{ titulo }}</h1>
+        <a href="{% url 'registro_evolucion:lista_informes' %}" 
+           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+            ← Volver a Informes
+        </a>
+    </div>
+
+    <!-- Información del Estudiante Seleccionado -->
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-green-800">👨‍🎓 Estudiante Seleccionado</h2>
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                ✅ Completó 24 sesiones
+            </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-green-700">Nombre Completo</label>
+                <p class="font-semibold text-gray-900">{{ estudiante_seleccionado.nombres }} {{ estudiante_seleccionado.apellido_paterno }} {{ estudiante_seleccionado.apellido_materno }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-green-700">RUDE</label>
+                <p class="font-semibold text-gray-900">{{ estudiante_seleccionado.codigo_rude }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-green-700">Fecha Nacimiento</label>
+                <p class="font-semibold text-gray-900">{{ estudiante_seleccionado.fecha_nacimiento|date:"d/m/Y" }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-green-700">Edad / Grado</label>
+                <p class="font-semibold text-gray-900">{{ estudiante_seleccionado.edad }} años / {{ estudiante_seleccionado.grado }} {{ estudiante_seleccionado.nivel }}</p>
+            </div>
+        </div>
+        
+        <!-- Estadísticas de Sesiones -->
+        <div class="mt-4 pt-4 border-t border-green-200">
+            <h3 class="text-lg font-semibold text-green-700 mb-2">📊 Estadísticas de Sesiones</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">24</div>
+                    <div class="text-sm text-gray-600">Total Sesiones</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ estudiante_seleccionado.agenda.sesiones_completadas }}</div>
+                    <div class="text-sm text-gray-600">Asistidas</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600">{{ total_faltas }}</div>
+                    <div class="text-sm text-gray-600">Faltas</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600">{{ total_licencias }}</div>
+                    <div class="text-sm text-gray-600">Licencias</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVA SECCIÓN: Calificación de Progreso Automática -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-blue-800">📈 Calificación de Progreso Automática</h2>
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                🎯 Calculado Automáticamente
+            </span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Promedio de Progreso -->
+            <div class="text-center">
+                <div class="text-3xl font-bold {% if promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                    {{ promedio_progreso|floatformat:2 }}/10
+                </div>
+                <div class="text-sm font-medium text-gray-700 mt-1">Promedio de Progreso</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    {{ sesiones_evaluadas }} de 24 sesiones evaluadas
+                </div>
+            </div>
+            
+            <!-- Recomendación -->
+            <div class="text-center">
+                <div class="text-2xl font-bold {% if promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                    {% if promedio_progreso >= 5.0 %}
+                        🎉 DE ALTA
+                    {% else %}
+                        🔄 CONTINUAR
+                    {% endif %}
+                </div>
+                <div class="text-sm font-medium text-gray-700 mt-1">Recomendación</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    {% if promedio_progreso >= 5.0 %}
+                        Proceso completado
+                    {% else %}
+                        Requiere más sesiones
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Estado del Estudiante -->
+            <div class="text-center">
+                <div class="text-2xl font-bold {% if promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                    {% if promedio_progreso >= 5.0 %}
+                        ✅ APROBADO
+                    {% else %}
+                        📚 EN PROCESO
+                    {% endif %}
+                </div>
+                <div class="text-sm font-medium text-gray-700 mt-1">Estado Actual</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Basado en el promedio
+                </div>
+            </div>
+            
+            <!-- Detalles Técnicos -->
+            <div class="text-center">
+                <div class="text-xl font-bold text-blue-600">
+                    {% if promedio_progreso >= 5.0 %}
+                        🎓 LISTO
+                    {% else %}
+                        📖 PRACTICAR
+                    {% endif %}
+                </div>
+                <div class="text-sm font-medium text-gray-700 mt-1">Nivel de Logro</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    {% if promedio_progreso >= 5.0 %}
+                        Meta alcanzada
+                    {% else %}
+                        En desarrollo
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Explicación del Cálculo -->
+        <div class="mt-4 pt-4 border-t border-blue-200">
+            <div class="text-sm text-blue-700">
+                <strong>📋 Criterio de Evaluación:</strong> 
+                {% if promedio_progreso >= 5.0 %}
+                    <span class="text-green-600">El estudiante ha demostrado un progreso satisfactorio ({{ promedio_progreso|floatformat:2 }}/10) y puede ser dado de alta del programa.</span>
+                {% else %}
+                    <span class="text-yellow-600">El estudiante necesita continuar con el programa ({{ promedio_progreso|floatformat:2 }}/10). Se recomienda retomar 24 sesiones más para fortalecer el aprendizaje.</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="formInforme" class="bg-white shadow-lg rounded-lg p-6">
+        {% csrf_token %}
+        
+        <!-- Campo oculto para el estudiante -->
+        <input type="hidden" name="estudiante" value="{{ estudiante_seleccionado.id }}">
+        
+        <!-- Datos Institucionales -->
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg">
+            <h2 class="text-xl font-bold text-blue-800 mb-4">🏫 CENTRO DE EDUCACION ESPECIAL "ADAPTACIÓN INFANTIL"</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <label class="block font-medium text-blue-700">Departamento</label>
+                    <p class="text-gray-900">LA PAZ</p>
+                </div>
+                <div>
+                    <label class="block font-medium text-blue-700">Distrito Educativo</label>
+                    <p class="text-gray-900">LA PAZ - 2</p>
+                </div>
+                <div>
+                    <label class="block font-medium text-blue-700">C.E.E.</label>
+                    <p class="text-gray-900">ADAPTACIÓN INFANTIL</p>
+                </div>
+                <div>
+                    <label class="block font-medium text-blue-700">Código C.E.E.</label>
+                    <p class="text-gray-900">80730696</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos del Programa -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Datos del Programa</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gestión</label>
+                    {{ form.gestion }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Semestre</label>
+                    {{ form.semestre_programa }}
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Diagnóstico Educativo</label>
+                    {{ form.diagnostico_educativo }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Desarrollo Educativo -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📈 ACTIVIDADES DE INTERVENCIÓN PEDAGÓGICA</h2>
+            
+            <!-- Encabezado de la tabla -->
+            <div class="grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                <div class="col-span-6">
+                    <label class="block text-sm font-medium text-gray-700">ÁREA DE DESARROLLO</label>
+                </div>
+                <div class="col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 text-center">DESARROLLO</label>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">RECOMENDACIONES</label>
+                </div>
+            </div>
+
+            <!-- Opciones de desarrollo -->
+            <div class="grid grid-cols-12 gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
+                <div class="col-span-6"></div>
+                <div class="col-span-4">
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="text-sm font-medium text-red-600">No Logró</div>
+                        <div class="text-sm font-medium text-yellow-600">En Proceso</div>
+                        <div class="text-sm font-medium text-green-600">Si Logró</div>
+                    </div>
+                </div>
+                <div class="col-span-2"></div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Desarrollo Socioemocional Afectivo -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo Socioemocional Afectivo
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Motivación, empatía, resiliencia, autoestima, identidad, adaptación, autorregulación emocional
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_1" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_1" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_1" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_1" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de las Funciones Básicas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de las Funciones Básicas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Espacialidad, temporalidad, lateralidad, esquema corporal, equilibrio, coordinación y velocidad de movimientos, gimnasia cerebral, motricidad fina y gruesa
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_2" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_2" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_2" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_2" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de Funciones Cognitivas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Funciones Cognitivas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Estimulación, percepción, atención, memoria, comprensión, neuro estructuración, velocidad de procesamiento de la información
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_3" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_3" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_3" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_3" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de Funciones Ejecutivas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Funciones Ejecutivas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Organización, rutinas, hábitos, adquisición de aprendizajes de manera autónoma, responsabilidad, toma de decisiones con responsabilidad y autodisciplina
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_4" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_4" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_4" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_4" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de Habilidades Comunicativas y Académicas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Habilidades Comunicativas y Académicas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Interacción, análisis y relación de ideas; construcción de secuencias; generalización, deducción y síntesis; interpretación y creatividad
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_5" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_5" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_5" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_5" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de la Lectura y Escritura -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de la Lectura y Escritura
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Intensión comunicativa, expresión (verbal, gestual y escrita), prelectura, lectura veloz y comprensiva, copias de texto, dictado de textos, legibilidad y velocidad
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_6" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_6" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_6" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_6" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Desarrollo de Razonamiento Lógico y Cálculo Matemático -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Razonamiento Lógico y Cálculo Matemático
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            noción de cantidad, conteo, des conteo, números ordinal, cardinal, composición y descomposición de UDCM, estimaciones de cantidades con aumentar, quitar, duplicar, triplicar, cuadriplicar, distribuir, cálculo mental
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_7" value="NO_LOGRO" class="text-red-600 focus:ring-red-500" required>
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_7" value="EN_PROCESO" class="text-yellow-600 focus:ring-yellow-500">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" name="area_7" value="SI_LOGRO" class="text-green-600 focus:ring-green-500">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <textarea name="recomendaciones_7" rows="3" placeholder="Opcional..." 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informe de Progresión -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📝 INFORME DE PROGRESIÓN</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Sesiones</label>
+                    <input type="number" value="24" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Licencias</label>
+                    <input type="number" value="{{ total_licencias }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Faltas</label>
+                    <input type="number" value="{{ total_faltas }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sesiones Asistidas</label>
+                    <input type="number" value="{{ estudiante_seleccionado.agenda.sesiones_completadas }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100" readonly>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Otras Señales de Alerta</label>
+                    {{ form.otras_senales_alerta }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado Final</label>
+                    {{ form.estado_final }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos de Registro -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Datos de Registro</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Director</label>
+                    {{ form.director }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lugar y Fecha</label>
+                    {{ form.lugar_fecha }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="inline-flex items-center">
+                        {{ form.sello_direccion }}
+                        <span class="ml-2 text-sm font-medium text-gray-700">Sello Dirección C.E.E.</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <a href="{% url 'registro_evolucion:lista_informes' %}" 
+               class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 font-medium">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                💾 Guardar Informe Final
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div id="modalExito" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <!-- Icono de éxito -->
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">✅ ¡Informe Generado Exitosamente!</h3>
+            
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    El informe final para <strong>{{ estudiante_seleccionado.nombres }} {{ estudiante_seleccionado.apellido_paterno }}</strong> 
+                    ha sido creado correctamente.
+                </p>
+            </div>
+            
+            <div class="items-center px-4 py-3">
+                <button id="ok-btn" 
+                        class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para los campos del formulario */
+select, textarea, input {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+select:focus, textarea:focus, input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Estilos para los radio buttons */
+input[type="radio"] {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+/* Mejora la apariencia de las áreas */
+.border-gray-200 {
+    border-color: #e5e7eb;
+}
+
+/* Estilos para el modal */
+.fixed {
+    position: fixed;
+}
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.bg-opacity-50 {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.hidden {
+    display: none;
+}
+.z-50 {
+    z-index: 50;
+}
+</style>
+
+<script>
+// Detectar cuando el formulario se envía exitosamente
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formInforme');
+    const modal = document.getElementById('modalExito');
+    const okBtn = document.getElementById('ok-btn');
+    
+    // Verificar si hay parámetros de éxito en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('exito') === 'true') {
+        mostrarModal();
+    }
+    
+    // Mostrar modal cuando se hace clic en Aceptar
+    okBtn.addEventListener('click', function() {
+        ocultarModal();
+        // Redirigir a la lista de informes
+        window.location.href = "{% url 'registro_evolucion:lista_informes' %}";
+    });
+    
+    // Cerrar modal si se hace clic fuera de él
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            ocultarModal();
+            window.location.href = "{% url 'registro_evolucion:lista_informes' %}";
+        }
+    });
+    
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            ocultarModal();
+            window.location.href = "{% url 'registro_evolucion:lista_informes' %}";
+        }
+    });
+    
+    function mostrarModal() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    
+    function ocultarModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // Prevenir envío múltiple del formulario
+    let formSubmitted = false;
+    form.addEventListener('submit', function(e) {
+        if (!formSubmitted) {
+            formSubmitted = true;
+            // Mostrar loading en el botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '⏳ Guardando...';
+            submitBtn.disabled = true;
+        } else {
+            e.preventDefault();
+        }
+    });
+});
+
+// También mostrar modal si hay mensajes de éxito de Django
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    document.getElementById('modalExito').classList.remove('hidden');
+                    document.getElementById('modalExito').classList.add('flex');
+                }, 500);
+            });
+        {% endif %}
+    {% endfor %}
+{% endif %}
+</script>
+{% endblock %}

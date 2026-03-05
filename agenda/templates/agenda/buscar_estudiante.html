@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Buscar Estudiante - Agenda{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
+    <h2 class="text-2xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-2">
+        🔍 Buscar Estudiante para Agenda
+    </h2>
+
+    <!-- Formulario de Búsqueda -->
+    <div class="mb-8">
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Cédula de Identidad del Estudiante *
+                </label>
+                <div class="flex space-x-2">
+                    <input type="text" name="ci_estudiante" 
+                           value="{{ request.POST.ci_estudiante }}"
+                           placeholder="Ej: 1234567"
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           required>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        🔍 Buscar
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Ingrese el número de cédula del estudiante</p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultado de Búsqueda -->
+    {% if estudiante %}
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-green-800 mb-3">✅ Estudiante Encontrado</h3>
+        
+        <div class="grid grid-cols-2 gap-3 text-sm">
+            <div><strong>Nombre:</strong> {{ estudiante.nombres }} {{ estudiante.apellido_paterno }}</div>
+            <div><strong>CI:</strong> {{ estudiante.documento_identidad }}</div>
+            <div><strong>Grado:</strong> {{ estudiante.grado }}</div>
+            <div><strong>Nivel:</strong> {{ estudiante.get_nivel_display }}</div>
+            {% if estudiante.programa_apoyo %}
+            <div class="col-span-2">
+                <strong>Programas:</strong> 
+                {% for programa in estudiante.programa_apoyo %}
+                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1">{{ programa }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Acciones -->
+        <div class="mt-4 flex space-x-4">
+            {% if agenda_existente %}
+            <div class="bg-yellow-50 border border-yellow-200 rounded p-3 flex-1">
+                <p class="text-yellow-800 text-sm">
+                    ⚠️ Este estudiante ya tiene una agenda programada
+                </p>
+                <a href="{% url 'agenda:calendario_general' %}" 
+                   class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Ver en calendario →
+                </a>
+            </div>
+            {% else %}
+            <a href="{% url 'agenda:crear_agenda' estudiante.id %}" 
+               class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-300">
+                📅 Crear Agenda de 24 Sesiones
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% elif request.method == 'POST' and not estudiante %}
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-red-800">❌ No se encontró ningún estudiante con ese número de CI</p>
+        <p class="text-red-700 text-sm mt-1">Verifique el número e intente nuevamente</p>
+    </div>
+    {% endif %}
+
+    <!-- Información -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+        <h4 class="font-semibold text-blue-800 mb-2">📋 ¿Cómo funciona?</h4>
+        <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+            <li>Busque al estudiante por su cédula de identidad</li>
+            <li>Asigne el día y horario de sus sesiones</li>
+            <li>Se crearán automáticamente 24 sesiones</li>
+            <li>Puede registrar asistencia en el calendario</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

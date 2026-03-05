@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}Información del Estudiante{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-10 mt-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 border-b-2 border-blue-200 pb-4">
+        <h2 class="text-2xl font-bold text-blue-700">
+            📊 Información del Estudiante
+        </h2>
+        <a href="{% url 'lista_estudiantes' %}" 
+           class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-300">
+            ← Volver a la Lista
+        </a>
+    </div>
+
+    <!-- Datos del Estudiante -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            👨‍🎓 Datos del Estudiante
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Nombre Completo:</strong> 
+                {{ estudiante.nombres }} {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno|default:"" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Documento de Identidad:</strong> {{ estudiante.documento_identidad }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Código RUDE:</strong> {{ estudiante.codigo_rude }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Fecha de Nacimiento:</strong> {{ estudiante.fecha_nacimiento }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Edad:</strong> {{ estudiante.edad }} años
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Género:</strong> {{ estudiante.get_genero_display }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>País:</strong> {{ estudiante.pais }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Departamento:</strong> {{ estudiante.departamento }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Nivel:</strong> {{ estudiante.get_nivel_display }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Grado:</strong> {{ estudiante.grado }}
+            </div>
+            <!-- NUEVOS CAMPOS AGREGADOS -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Semestre:</strong> {{ estudiante.get_semestre_display }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Maestra/o de Aula:</strong> {{ estudiante.maestra_aula|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Gestión de Ingreso:</strong> {{ estudiante.gestion_ingreso }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Colegio de Procedencia:</strong> {{ estudiante.colegio_procedencia|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Modalidad de Atención:</strong> {{ estudiante.get_modalidad_atencion_display }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dirección del Estudiante -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            📍 Dirección del Estudiante
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Zona:</strong> {{ estudiante.zona }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Avenida:</strong> {{ estudiante.avenida|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>N° Vivienda:</strong> {{ estudiante.nro_vivienda|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Teléfono:</strong> {{ estudiante.telefono|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
+                <strong>Celular:</strong> {{ estudiante.celular|default:"No especificado" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Datos del Tutor -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            👨‍👩‍👧‍👦 Datos del Tutor / Padre
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Nombre Completo:</strong> 
+                {{ estudiante.tutor.nombres }} {{ estudiante.tutor.apellido_paterno }} {{ estudiante.tutor.apellido_materno|default:"" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>CI:</strong> {{ estudiante.tutor.ci }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Parentesco:</strong> {{ estudiante.tutor.parentesco|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Ocupación:</strong> {{ estudiante.tutor.ocupacion|default:"No especificado" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dirección del Tutor -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            📍 Dirección del Tutor
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Zona:</strong> {{ estudiante.tutor.zona|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Avenida:</strong> {{ estudiante.tutor.avenida|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>N° Vivienda:</strong> {{ estudiante.tutor.nro_vivienda|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Teléfono:</strong> {{ estudiante.tutor.telefono|default:"No especificado" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
+                <strong>Celular:</strong> {{ estudiante.tutor.celular|default:"No especificado" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluación y Programas -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            📋 Evaluación y Programas de Apoyo
+        </h3>
+        
+        <!-- Resultados de Evaluación -->
+        <div class="mb-4">
+            <h4 class="font-semibold text-gray-700 mb-2">Resultados de Evaluación:</h4>
+            {% if estudiante.resultados_evaluacion %}
+                <ul class="list-disc list-inside bg-gray-50 p-4 rounded-lg">
+                    {% for evaluacion in estudiante.resultados_evaluacion %}
+                        <li>{{ evaluacion }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="bg-gray-50 p-4 rounded-lg text-gray-500">No se registraron evaluaciones</p>
+            {% endif %}
+        </div>
+
+        <!-- Programas de Apoyo -->
+        <div class="mb-4">
+            <h4 class="font-semibold text-gray-700 mb-2">Programas de Apoyo:</h4>
+            {% if estudiante.programa_apoyo %}
+                <ul class="list-disc list-inside bg-gray-50 p-4 rounded-lg">
+                    {% for programa in estudiante.programa_apoyo %}
+                        <li>{{ programa }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="bg-gray-50 p-4 rounded-lg text-gray-500">No se registraron programas de apoyo</p>
+            {% endif %}
+        </div>
+
+        <!-- Evaluación Requerida -->
+        <div class="mb-4">
+            <h4 class="font-semibold text-gray-700 mb-2">Evaluación Requerida:</h4>
+            {% if estudiante.evaluacion_requerida and estudiante.evaluacion_requerida != 'Ninguna' %}
+                <p class="bg-gray-50 p-4 rounded-lg">{{ estudiante.evaluacion_requerida }}</p>
+            {% else %}
+                <p class="bg-gray-50 p-4 rounded-lg text-gray-500">Ninguna evaluación especial requerida</p>
+            {% endif %}
+        </div>
+
+        <!-- Otro Programa -->
+        {% if estudiante.programa_otro %}
+        <div class="mb-4">
+            <h4 class="font-semibold text-gray-700 mb-2">Otro Programa:</h4>
+            <p class="bg-gray-50 p-4 rounded-lg">{{ estudiante.programa_otro }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Fechas de Registro -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-blue-600 mb-4 border-b border-blue-100 pb-2">
+            📅 Información de Registro
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Fecha de Registro:</strong> {{ estudiante.created_at|date:"d/m/Y H:i" }}
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <strong>Última Actualización:</strong> {{ estudiante.updated_at|date:"d/m/Y H:i" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+        <a href="{% url 'lista_estudiantes' %}" 
+           class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition duration-300">
+            ← Volver
+        </a>
+        <a href="{% url 'editar_estudiante' estudiante.id %}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-300">
+            ✏️ Editar
+        </a>
+    </div>
+</div>
+{% endblock %}

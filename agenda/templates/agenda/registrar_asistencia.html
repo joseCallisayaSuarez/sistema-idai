@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Asistencia - Agenda{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
+    <h2 class="text-2xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-2">
+        📝 Registrar Asistencia
+    </h2>
+
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-3 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Información del Estudiante -->
+    <div class="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-200">
+        <h3 class="font-semibold text-gray-800 mb-4 text-lg">Información de la Sesión</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="space-y-2">
+                <p><strong class="text-gray-700">Estudiante:</strong><br>
+                <span class="text-gray-900">{{ sesion.agenda.estudiante.nombres }} {{ sesion.agenda.estudiante.apellido_paterno }} {{ sesion.agenda.estudiante.apellido_materno }}</span></p>
+                
+                <p><strong class="text-gray-700">CI:</strong><br>
+                <span class="text-gray-900">{{ sesion.agenda.estudiante.documento_identidad }}</span></p>
+            </div>
+            
+            <div class="space-y-2">
+                <p><strong class="text-gray-700">Fecha Programada:</strong><br>
+                <span class="text-gray-900">{{ sesion.fecha_programada|date:"d/m/Y" }}</span></p>
+                
+                <p><strong class="text-gray-700">Horario:</strong><br>
+                <span class="text-gray-900">{{ sesion.agenda.hora_inicio|time:"H:i" }} - {{ sesion.agenda.hora_fin|time:"H:i" }}</span></p>
+                
+                <p><strong class="text-gray-700">Estado Actual:</strong><br>
+                <span class="{% if sesion.estado == 'programada' %}text-yellow-600 font-semibold
+                            {% elif sesion.estado == 'asistio' %}text-green-600 font-semibold
+                            {% elif sesion.estado == 'ausente' %}text-red-600 font-semibold
+                            {% elif sesion.estado == 'justificada' %}text-orange-600 font-semibold
+                            {% endif %}">
+                    {{ sesion.get_estado_display }}
+                </span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Asistencia -->
+    <form method="POST" action="{% url 'agenda:registrar_asistencia' sesion.id %}" class="space-y-6">
+        {% csrf_token %}
+        
+        <input type="hidden" name="year" value="{{ request.GET.year|default:current_year }}">
+        <input type="hidden" name="month" value="{{ request.GET.month|default:current_month }}">
+        
+        <div class="space-y-6">
+            <!-- Estado de Asistencia -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_estado">
+                    Estado de Asistencia *
+                </label>
+                {{ form.estado }}
+                {% if form.estado.errors %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form.estado.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Calificación del Progreso -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_progreso">
+                    Calificación del Progreso (1-10)
+                </label>
+                {{ form.progreso }}
+                <p class="text-xs text-gray-500 mt-1">Evalúa el desempeño del estudiante en esta sesión (opcional)</p>
+                {% if form.progreso.errors %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form.progreso.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Observaciones de la Sesión -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_observaciones">
+                    Observaciones de la Sesión
+                </label>
+                {{ form.observaciones }}
+                <p class="text-xs text-gray-500 mt-1">Notas sobre el desempeño, comportamiento o avances del estudiante (opcional)</p>
+                {% if form.observaciones.errors %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form.observaciones.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Justificación (solo para estado "justificada") -->
+            <div id="justificacion-container" style="display: none;">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_justificacion">
+                    Motivo de Justificación *
+                </label>
+                {{ form.justificacion }}
+                <p class="text-xs text-gray-500 mt-1">La sesión se reprogramará automáticamente para la siguiente semana</p>
+                {% if form.justificacion.errors %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form.justificacion.errors }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'agenda:calendario_general' %}?year={{ request.GET.year|default:current_year }}&month={{ request.GET.month|default:current_month }}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2 rounded-lg shadow-md transition">
+                💾 Guardar Asistencia
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('id_estado');
+    const justificacionContainer = document.getElementById('justificacion-container');
+    const justificacionTextarea = document.getElementById('id_justificacion');
+    
+    function toggleJustificacion() {
+        if (estadoSelect && estadoSelect.value === 'justificada') {
+            justificacionContainer.style.display = 'block';
+            justificacionTextarea.required = true;
+        } else {
+            justificacionContainer.style.display = 'none';
+            justificacionTextarea.required = false;
+        }
+    }
+    
+    if (estadoSelect) {
+        estadoSelect.addEventListener('change', toggleJustificacion);
+        toggleJustificacion(); // Estado inicial
+    }
+});
+</script>
+{% endblock %}

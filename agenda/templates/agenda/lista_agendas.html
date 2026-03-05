@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Agendas - Agenda{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 border-b-2 border-blue-200 pb-4">
+        <h1 class="text-2xl font-bold text-blue-700">📋 Gestión de Agendas</h1>
+        <div class="flex space-x-4">
+            <a href="{% url 'agenda:buscar_estudiante' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                + Nueva Agenda
+            </a>
+            <a href="{% url 'agenda:calendario_general' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                🗓️ Ver Calendario
+            </a>
+        </div>
+    </div>
+
+    <!-- Buscador por Nombre o CI -->
+    <div class="mb-6">
+        <form method="GET" action="{% url 'agenda:lista_agendas' %}" class="flex items-center space-x-4">
+            <div class="flex-grow">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Buscar por nombre o CI..." 
+                       value="{{ request.GET.q }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                🔍 Buscar
+            </button>
+            {% if request.GET.q %}
+            <a href="{% url 'agenda:lista_agendas' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div class="text-2xl font-bold text-blue-700">{{ total_agendas }}</div>
+            <div class="text-sm text-blue-600">Total Agendas</div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div class="text-2xl font-bold text-green-700">{{ en_progreso }}</div>
+            <div class="text-sm text-green-600">En Progreso</div>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div class="text-2xl font-bold text-purple-700">{{ completadas }}</div>
+            <div class="text-sm text-purple-600">Completadas</div>
+        </div>
+        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <div class="text-2xl font-bold text-orange-700">{{ inactivas }}</div>
+            <div class="text-sm text-orange-600">Inactivas</div>
+        </div>
+    </div>
+
+    <!-- Lista de Agendas -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        {% if agendas %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-blue-600 text-white">
+                <tr>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Estudiante</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Días</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Horario</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Inicio</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Progreso</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Estado</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for agenda in agendas %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">
+                            {{ agenda.estudiante.nombres }} {{ agenda.estudiante.apellido_paterno }}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            CI: {{ agenda.estudiante.documento_identidad }}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        {% for dia in agenda.dias_semana.all %}
+                            <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mb-1">{{ dia.nombre }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        {{ agenda.hora_inicio|time:"H:i" }} - {{ agenda.hora_fin|time:"H:i" }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        {{ agenda.fecha_inicio|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" 
+                                     style="width: {% widthratio agenda.sesiones_completadas 24 100 %}%">
+                                </div>
+                            </div>
+                            <span class="ml-2 text-xs text-gray-600">
+                                {{ agenda.sesiones_completadas }}/24
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if agenda.activo %}
+                            {% if agenda.sesiones_completadas == 24 %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    🎉 Completada
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    ✅ Activa
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                ❌ Inactiva
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+    <div class="flex flex-col space-y-1">
+        <!-- READ - Ver detalles -->
+        <a href="{% url 'agenda:detalle_agenda' agenda.id %}" 
+           class="bg-blue-600 text-white px-3 py-1 rounded text-center hover:bg-blue-700">
+            Ver
+        </a>
+        
+        <!-- UPDATE - Editar -->
+        <a href="{% url 'agenda:editar_agenda' agenda.id %}" 
+           class="bg-green-600 text-white px-3 py-1 rounded text-center hover:bg-green-700">
+            Editar
+        </a>
+        
+        <!-- TOGGLE ACTIVAR/DESACTIVAR -->
+        {% if agenda.activo %}
+        <form method="POST" action="{% url 'agenda:desactivar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="w-full bg-orange-600 text-white px-3 py-1 rounded text-center hover:bg-orange-700"
+                   onclick="return confirm('¿Estás seguro de pausar esta agenda?')">
+                Pausar
+            </button>
+        </form>
+        {% else %}
+        <form method="POST" action="{% url 'agenda:activar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="w-full bg-green-600 text-white px-3 py-1 rounded text-center hover:bg-green-700"
+                   onclick="return confirm('¿Estás seguro de activar esta agenda?')">
+                Activar
+            </button>
+        </form>
+        {% endif %}
+        
+        <!-- DELETE - Eliminar -->
+        <form method="POST" action="{% url 'agenda:eliminar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="w-full bg-red-600 text-white px-3 py-1 rounded text-center hover:bg-red-700"
+                   onclick="return confirm('¿Estás seguro de eliminar esta agenda? Esta acción no se puede deshacer.')">
+                Eliminar
+            </button>
+        </form>
+    </div>
+</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="text-gray-400 text-6xl mb-4">📅</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay agendas creadas</h3>
+            <p class="text-gray-500 mb-4">Comienza creando la primera agenda para un estudiante</p>
+            <a href="{% url 'agenda:buscar_estudiante' %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                Crear primera agenda →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Información adicional -->
+    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">📊 Funcionalidades CRUD</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div>
+                <h5 class="font-medium mb-1">Operaciones CRUD:</h5>
+                <ul class="list-disc list-inside space-y-1">
+                    <li><strong>👁️ Ver</strong> - Detalles completos de la agenda</li>
+                    <li><strong>✏️ Editar</strong> - Modificar horarios y días</li>
+                    <li><strong>⏸️ Pausar</strong> - Desactivar agenda temporalmente</li>
+                    <li><strong>▶️ Activar</strong> - Reactivar agenda pausada</li>
+                    <li><strong>🗑️ Eliminar</strong> - Borrar agenda permanentemente</li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-medium mb-1">Estados:</h5>
+                <ul class="list-disc list-inside space-y-1">
+                    <li><span class="text-green-600">✅ Activa</span> - Sesiones en progreso</li>
+                    <li><span class="text-purple-600">🎉 Completada</span> - 24/24 sesiones</li>
+                    <li><span class="text-red-600">❌ Inactiva</span> - Agenda pausada</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmaciones -->
+<div id="confirmationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Confirmar acción</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500" id="modalMessage">¿Estás seguro de realizar esta acción?</p>
+            </div>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="confirmButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Confirmar
+                </button>
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmAction(action, message) {
+    const modal = document.getElementById('confirmationModal');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmButton = document.getElementById('confirmButton');
+    
+    modalMessage.textContent = message;
+    modal.classList.remove('hidden');
+    
+    confirmButton.onclick = function() {
+        // Aquí iría la lógica para ejecutar la acción
+        console.log('Ejecutando acción:', action);
+        closeModal();
+    };
+}
+
+function closeModal() {
+    document.getElementById('confirmationModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

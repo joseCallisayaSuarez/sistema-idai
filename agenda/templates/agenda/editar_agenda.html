@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Editar Agenda - {{ agenda.estudiante }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 border-b-2 border-blue-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-blue-700">✏️ Editar Agenda</h1>
+            <p class="text-gray-600 mt-1">Modificar la configuración de la agenda</p>
+        </div>
+        <div>
+            <a href="{% url 'agenda:detalle_agenda' agenda.id %}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                ← Cancelar
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Estudiante -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+        <h3 class="font-semibold text-gray-800 mb-2">Estudiante:</h3>
+        <p class="text-gray-900">{{ agenda.estudiante.nombres }} {{ agenda.estudiante.apellido_paterno }} - CI: {{ agenda.estudiante.documento_identidad }}</p>
+    </div>
+
+    <!-- Advertencia si cambian día o fecha -->
+    {% if dia_semana_anterior and fecha_inicio_anterior %}
+        {% if dia_semana_anterior != form.initial.dia_semana or fecha_inicio_anterior != form.initial.fecha_inicio %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+                <div class="text-yellow-600 mr-3">⚠️</div>
+                <div>
+                    <h4 class="font-semibold text-yellow-800">Cambios que afectan las sesiones</h4>
+                    <p class="text-yellow-700 text-sm mt-1">
+                        Al cambiar el día de la semana o fecha de inicio, se recomienda regenerar todas las sesiones.
+                    </p>
+                    <div class="mt-2 flex items-center">
+                        <input type="checkbox" name="regenerar_sesiones" value="si" id="regenerar_sesiones" class="mr-2" checked>
+                        <label for="regenerar_sesiones" class="text-sm text-yellow-800">
+                            Regenerar las 24 sesiones automáticamente
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Día de la semana -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.dia_semana.id_for_label }}">
+                    Día de la semana *
+                </label>
+                {{ form.dia_semana }}
+                {% if form.dia_semana.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.dia_semana.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Fecha de inicio -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.fecha_inicio.id_for_label }}">
+                    Fecha de inicio *
+                </label>
+                {{ form.fecha_inicio }}
+                {% if form.fecha_inicio.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.fecha_inicio.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Horario -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.hora_inicio.id_for_label }}">
+                    Hora de inicio *
+                </label>
+                {{ form.hora_inicio }}
+                {% if form.hora_inicio.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.hora_inicio.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.hora_fin.id_for_label }}">
+                    Hora de fin *
+                </label>
+                {{ form.hora_fin }}
+                {% if form.hora_fin.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.hora_fin.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'agenda:detalle_agenda' agenda.id %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2 rounded-lg shadow-md transition">
+                💾 Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Mostrar advertencia en tiempo real cuando cambien día o fecha
+document.addEventListener('DOMContentLoaded', function() {
+    const diaSelect = document.getElementById('id_dia_semana');
+    const fechaInput = document.getElementById('id_fecha_inicio');
+    
+    function verificarCambios() {
+        // Esta función puede usarse para mostrar advertencias en tiempo real
+        console.log('Cambios detectados en día o fecha');
+    }
+    
+    if (diaSelect) diaSelect.addEventListener('change', verificarCambios);
+    if (fechaInput) fechaInput.addEventListener('change', verificarCambios);
+});
+</script>
+{% endblock %}

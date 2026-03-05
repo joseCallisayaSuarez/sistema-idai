@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Copias de Seguridad - Sistema{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-4">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">💾 Sistema de Backup y Restauración</h1>
+                <p class="text-gray-600">Crea copias de seguridad de todo el sistema y restáuralo cuando sea necesario</p>
+            </div>
+            <a href="{% url 'agenda:calendario_general' %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                📅 Volver al Sistema
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Crear Backup -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                <span class="mr-2">📥</span> Crear Nueva Copia de Seguridad
+            </h2>
+            
+            <form method="POST" action="{% url 'backups:crear_backup' %}" id="formBackup">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium">Nombre del Backup:</label>
+                    <input type="text" name="nombre" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="Ej: Backup completo - Diciembre 2024"
+                           value="Backup {{ fecha_actual|date:'d/m/Y H:i' }}">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Descripción (opcional):</label>
+                    <textarea name="descripcion" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                              placeholder="Descripción detallada del backup"></textarea>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                    <span class="mr-2">🗂️</span>
+                    Crear y Descargar Backup
+                </button>
+                
+                <div id="backupProgress" class="hidden mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
+                        <span id="progressText">Creando backup...</span>
+                    </div>
+                    <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="progressBar" class="h-full bg-blue-600 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-500 mt-3 text-center">
+                    Se descargará automáticamente un archivo .json con todos los datos del sistema
+                </p>
+            </form>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 class="font-bold text-blue-800 mb-2 flex items-center">
+                    <span class="mr-2">ℹ️</span> ¿Qué se incluye?
+                </h4>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Todos los estudiantes y sus datos
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Agendas y sesiones programadas
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Historial de asistencias
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Usuarios y permisos del sistema
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Estadísticas y reportes
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2">✓</span> Registro de evolución
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Restaurar Sistema -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-red-700 mb-4 flex items-center">
+                <span class="mr-2">🔄</span> Restaurar Sistema desde Backup
+            </h2>
+            
+            <form method="POST" action="{% url 'backups:restaurar_backup' %}" enctype="multipart/form-data" id="formRestore">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Seleccionar Archivo de Backup:</label>
+                    <input type="file" name="archivo_backup" accept=".json" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <p class="text-sm text-gray-500 mt-1">Sube el archivo .json que descargaste anteriormente</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Tipo de Restauración:</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-2 border rounded hover:bg-red-50">
+                            <input type="radio" name="tipo_restauracion" value="completa" checked class="mr-3 h-5 w-5 text-red-600">
+                            <div>
+                                <span class="font-bold text-red-700">Restauración Completa</span>
+                                <p class="text-sm text-red-600">Elimina todos los datos actuales y restaura todo desde el backup</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-2 border rounded hover:bg-blue-50">
+                            <input type="radio" name="tipo_restauracion" value="parcial" class="mr-3 h-5 w-5 text-blue-600">
+                            <div>
+                                <span class="font-bold text-blue-700">Restauración Parcial</span>
+                                <p class="text-sm text-blue-600">Solo agrega datos faltantes, no elimina datos existentes</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="flex items-start p-3 bg-red-50 border border-red-200 rounded">
+                        <input type="checkbox" name="confirmar" required 
+                               class="mt-1 mr-3 h-5 w-5 text-red-600 border-red-300 rounded focus:ring-red-500">
+                        <span class="text-red-700 font-bold">
+                            Confirmo que comprendo los riesgos y quiero restaurar el sistema. 
+                            Esta acción no se puede deshacer.
+                        </span>
+                    </label>
+                </div>
+                
+                <button type="submit" 
+                        onclick="return confirmarRestauracion()"
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                    <span class="mr-2">🚨</span>
+                    Restaurar Sistema desde Archivo
+                </button>
+                
+                <p class="text-sm text-red-600 mt-3 text-center font-bold">
+                    ⚠️ ADVERTENCIA: Esta acción puede sobreescribir datos existentes
+                </p>
+            </form>
+            
+            <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h4 class="font-bold text-yellow-800 mb-2 flex items-center">
+                    <span class="mr-2">🚨</span> Precaución al Restaurar
+                </h4>
+                <ul class="text-sm text-yellow-700 space-y-1">
+                    <li>• Haz un backup actual antes de restaurar</li>
+                    <li>• Verifica que el archivo sea de tu sistema</li>
+                    <li>• El proceso puede tardar varios minutos</li>
+                    <li>• No cierres el navegador durante la restauración</li>
+                    <li>• Verifica los datos después de restaurar</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Backups Existentes -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <span class="mr-2">📋</span> Historial de Backups
+                <span class="ml-2 text-sm font-normal text-gray-500">({{ total_backups }} backups)</span>
+            </h2>
+            <button onclick="actualizarLista()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm flex items-center">
+                <span class="mr-1">🔄</span> Actualizar
+            </button>
+        </div>
+        
+        {% if backups %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="p-3 text-left">Nombre</th>
+                        <th class="p-3 text-left">Fecha</th>
+                        <th class="p-3 text-left">Usuario</th>
+                        <th class="p-3 text-left">Tamaño</th>
+                        <th class="p-3 text-left">Estado</th>
+                        <th class="p-3 text-left">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup in backups %}
+                    <tr class="border-b hover:bg-gray-50 transition-colors duration-150" id="backup-{{ backup.id }}">
+                        <td class="p-3">
+                            <div class="font-medium">{{ backup.nombre }}</div>
+                            {% if backup.descripcion %}
+                            <div class="text-sm text-gray-500">{{ backup.descripcion|truncatechars:50 }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="p-3">
+                            <div>{{ backup.fecha_creacion|date:"d/m/Y" }}</div>
+                            <div class="text-xs text-gray-500">{{ backup.fecha_creacion|date:"H:i" }}</div>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                                    <span class="text-blue-600 font-bold text-sm">
+                                        {{ backup.usuario.username|first|default:"S"|upper }}
+                                    </span>
+                                </div>
+                                <span>{{ backup.usuario.username|default:"Sistema" }}</span>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-mono">{{ backup.tamano_formateado }}</div>
+                        </td>
+                        <td class="p-3">
+                            {% if backup.estado == 'completado' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                Completado
+                            </span>
+                            {% elif backup.estado == 'en_progreso' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <span class="animate-ping mr-1">⏳</span>
+                                En progreso
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                                Fallido
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3">
+                            <div class="flex space-x-2">
+                                {% if backup.estado == 'completado' and backup.archivo %}
+                                <a href="{% url 'backups:descargar_backup' backup.id %}" 
+                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors duration-200">
+                                    <span class="mr-1">📥</span> Descargar
+                                </a>
+                                {% endif %}
+                                
+                                <button onclick="verInfoBackup({{ backup.id }})" 
+                                        class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors duration-200">
+                                    <span class="mr-1">📊</span> Info
+                                </button>
+                                
+                                {% if backup.estado == 'completado' %}
+                                <button onclick="usarParaRestaurar({{ backup.id }}, '{{ backup.nombre }}')" 
+                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors duration-200">
+                                    <span class="mr-1">🔄</span> Restaurar
+                                </button>
+                                {% endif %}
+                                
+                                <button onclick="eliminarBackupConfirmado({{ backup.id }}, '{{ backup.nombre }}')" 
+                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors duration-200">
+                                    <span class="mr-1">🗑️</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4 text-gray-600 text-sm flex justify-between items-center">
+            <div>
+                📊 {{ backups_completados.count }} backups completados • 
+                Tamaño total: {{ tamano_total|filesizeformat }}
+            </div>
+            <div class="text-xs text-gray-500">
+                Última actualización: {% now "H:i:s" %}
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-12 text-gray-500">
+            <div class="text-6xl mb-4">📭</div>
+            <p class="text-xl font-medium mb-2">No hay backups creados aún</p>
+            <p class="mb-6">Crea tu primer backup usando el formulario superior</p>
+            <button onclick="crearBackupRapido()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg">
+                🗂️ Crear Backup Rápido
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para información detallada -->
+<div id="modalInfo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <span class="mr-2">📊</span> Información Detallada del Backup
+        </h3>
+        <div id="modalContenido" class="text-gray-700">
+            <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="text-gray-600 mt-2">Cargando información...</p>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-between">
+            <button onclick="descargarDesdeModal()" 
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded hidden" 
+                    id="btnDescargarModal">
+                📥 Descargar este Backup
+            </button>
+            <button onclick="cerrarModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para restaurar desde lista -->
+<div id="modalRestaurar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-bold text-red-700 mb-4">🔄 Restaurar desde Backup</h3>
+        <p class="text-gray-600 mb-4">Vas a restaurar el sistema desde: <strong id="nombreBackupRestaurar"></strong></p>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2 font-medium">Tipo de restauración:</label>
+            <select id="tipoRestauracionSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <option value="completa">Completa (sobrescribe todo)</option>
+                <option value="parcial">Parcial (solo agrega datos)</option>
+            </select>
+        </div>
+        
+        <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded">
+            <label class="flex items-start">
+                <input type="checkbox" id="confirmarRestauracionModal" class="mt-1 mr-2">
+                <span class="text-red-700 text-sm">Confirmo que quiero restaurar desde este backup</span>
+            </label>
+        </div>
+        
+        <div class="flex justify-between">
+            <button onclick="cerrarModalRestaurar()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Cancelar
+            </button>
+            <button onclick="ejecutarRestauracionDesdeModal()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-bold">
+                🚨 Restaurar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let backupIdActual = null;
+
+// ============ FUNCIONES PARA CREAR BACKUP ============
+function crearBackupRapido() {
+    document.querySelector('#formBackup input[name="nombre"]').value = 'Backup rápido ' + new Date().toLocaleTimeString();
+    document.querySelector('#formBackup').submit();
+}
+
+// ============ FUNCIONES PARA RESTAURAR ============
+function confirmarRestauracion() {
+    const form = document.getElementById('formRestore');
+    const archivo = form.querySelector('input[name="archivo_backup"]');
+    const confirmar = form.querySelector('input[name="confirmar"]');
+    const tipo = form.querySelector('input[name="tipo_restauracion"]:checked');
+    
+    if (!archivo.files.length) {
+        alert('❌ Debes seleccionar un archivo de backup');
+        return false;
+    }
+    
+    if (!confirmar.checked) {
+        alert('❌ Debes confirmar que quieres restaurar el sistema');
+        return false;
+    }
+    
+    const tipoTexto = tipo.value === 'completa' ? 'COMPLETA' : 'PARCIAL';
+    const mensaje = tipo.value === 'completa' 
+        ? '🚨 RESTAURACIÓN COMPLETA\n\n⚠️ ADVERTENCIA:\n• Se ELIMINARÁN TODOS los datos actuales\n• Se restaurará TODO desde el backup\n• Esta acción NO SE PUEDE DESHACER\n\n¿Continuar?'
+        : '🔄 RESTAURACIÓN PARCIAL\n\nSe agregarán datos del backup al sistema actual.\n¿Continuar?';
+    
+    return confirm(mensaje);
+}
+
+function usarParaRestaurar(id, nombre) {
+    backupIdActual = id;
+    document.getElementById('nombreBackupRestaurar').textContent = nombre;
+    document.getElementById('modalRestaurar').classList.remove('hidden');
+}
+
+function cerrarModalRestaurar() {
+    document.getElementById('modalRestaurar').classList.add('hidden');
+    backupIdActual = null;
+}
+
+function ejecutarRestauracionDesdeModal() {
+    const confirmar = document.getElementById('confirmarRestauracionModal');
+    const tipo = document.getElementById('tipoRestauracionSelect');
+    
+    if (!confirmar.checked) {
+        alert('Debes confirmar la restauración');
+        return;
+    }
+    
+    if (!confirm('¿Estás seguro de restaurar desde este backup?')) {
+        return;
+    }
+    
+    // Crear formulario dinámico para descargar y luego restaurar
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/backups/descargar/${backupIdActual}/`;
+    
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrfmiddlewaretoken';
+    csrf.value = '{{ csrf_token }}';
+    form.appendChild(csrf);
+    
+    document.body.appendChild(form);
+    
+    // Primero descargar el backup
+    form.submit();
+    
+    // Luego sugerir restaurar (esto sería en un flujo ideal)
+    setTimeout(() => {
+        alert('✅ Backup descargado. Ahora puedes restaurarlo desde el formulario de restauración.');
+        cerrarModalRestaurar();
+    }, 1000);
+}
+
+// ============ FUNCIONES PARA INFORMACIÓN ============
+function verInfoBackup(backupId) {
+    fetch(`/backups/info/${backupId}/`)
+        .then(response => response.json())
+        .then(data => {
+            let contenido = '';
+            
+            if (data.error) {
+                contenido = `<p class="text-red-500">${data.error}</p>`;
+            } else {
+                contenido = `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-sm text-gray-500">Nombre</div>
+                                <div class="font-bold">${data.nombre}</div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-sm text-gray-500">Fecha</div>
+                                <div class="font-bold">${data.fecha}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-sm text-gray-500">Usuario</div>
+                                <div class="font-bold">${data.usuario}</div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-sm text-gray-500">Tamaño</div>
+                                <div class="font-bold">${data.tamano}</div>
+                            </div>
+                        </div>
+                        
+                        ${data.descripcion ? `
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="text-sm text-gray-500 mb-1">Descripción</div>
+                            <div>${data.descripcion}</div>
+                        </div>` : ''}
+                `;
+                
+                if (data.estadisticas && Object.keys(data.estadisticas).length > 0) {
+                    contenido += `
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-blue-800 mb-3">📊 Estadísticas por Módulo</h4>
+                            <div class="space-y-3">
+                    `;
+                    
+                    for (const [app, modelos] of Object.entries(data.estadisticas)) {
+                        let totalModelos = Object.keys(modelos).length;
+                        let totalRegistros = Object.values(modelos).reduce((a, b) => a + b, 0);
+                        
+                        contenido += `
+                            <div class="border-b pb-3">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold">${app}</span>
+                                    <span class="text-sm text-gray-600">${totalModelos} modelos, ${totalRegistros} registros</span>
+                                </div>
+                                <div class="text-sm text-gray-600 grid grid-cols-2 gap-2">
+                        `;
+                        
+                        for (const [modelo, cantidad] of Object.entries(modelos)) {
+                            contenido += `<div>• ${modelo}: <span class="font-bold">${cantidad}</span></div>`;
+                        }
+                        
+                        contenido += `</div></div>`;
+                    }
+                    
+                    contenido += `</div></div>`;
+                }
+                
+                contenido += `</div>`;
+                
+                // Mostrar botón de descarga si hay archivo
+                if (data.tiene_archivo) {
+                    document.getElementById('btnDescargarModal').classList.remove('hidden');
+                    document.getElementById('btnDescargarModal').onclick = function() {
+                        window.location.href = `/backups/descargar/${backupId}/`;
+                    };
+                }
+            }
+            
+            document.getElementById('modalContenido').innerHTML = contenido;
+            document.getElementById('modalInfo').classList.remove('hidden');
+        })
+        .catch(error => {
+            document.getElementById('modalContenido').innerHTML = 
+                '<p class="text-red-500">Error al cargar información del backup</p>';
+            document.getElementById('modalInfo').classList.remove('hidden');
+        });
+}
+
+function descargarDesdeModal() {
+    if (backupIdActual) {
+        window.location.href = `/backups/descargar/${backupIdActual}/`;
+    }
+}
+
+function cerrarModal() {
+    document.getElementById('modalInfo').classList.add('hidden');
+    document.getElementById('btnDescargarModal').classList.add('hidden');
+    backupIdActual = null;
+}
+
+// ============ FUNCIONES PARA ELIMINAR ============
+function eliminarBackupConfirmado(backupId, nombre) {
+    if (confirm(`¿Estás seguro de eliminar el backup "${nombre}"?\n\nSe eliminará tanto el registro como el archivo físico.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/backups/eliminar/${backupId}/`;
+        
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+        form.appendChild(csrf);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// ============ FUNCIONES AUXILIARES ============
+function actualizarLista() {
+    location.reload();
+}
+
+// Actualizar automáticamente cada 30 segundos si hay backups en progreso
+setInterval(() => {
+    const enProgreso = document.querySelectorAll('[class*="bg-yellow-100"]').length > 0;
+    if (enProgreso) {
+        actualizarLista();
+    }
+}, 30000);
+
+// Manejar envío del formulario de backup
+document.getElementById('formBackup').addEventListener('submit', function(e) {
+    const button = this.querySelector('button[type="submit"]');
+    const progressDiv = document.getElementById('backupProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    
+    button.disabled = true;
+    button.innerHTML = '<span class="mr-2">⏳</span> Procesando...';
+    progressDiv.classList.remove('hidden');
+    
+    // Simular progreso (esto sería real en una implementación con AJAX)
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 5;
+        progressBar.style.width = progress + '%';
+        
+        if (progress <= 30) {
+            progressText.textContent = 'Recolectando datos...';
+        } else if (progress <= 70) {
+            progressText.textContent = 'Generando archivo...';
+        } else if (progress <= 90) {
+            progressText.textContent = 'Guardando backup...';
+        } else {
+            progressText.textContent = '¡Completado!';
+            clearInterval(interval);
+        }
+    }, 300);
+});
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar notificación si hay backups fallidos
+    const backupsFallidos = document.querySelectorAll('[class*="bg-red-100"]').length;
+    if (backupsFallidos > 0) {
+        console.log(`⚠️ Hay ${backupsFallidos} backups fallidos`);
+    }
+    
+    // Configurar tooltips
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => {
+        el.setAttribute('data-tooltip', el.getAttribute('title'));
+        el.removeAttribute('title');
+    });
+});
+</script>
+
+<style>
+/* Estilos adicionales */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+tr:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+/* Animación para nuevo backup */
+@keyframes highlight {
+    0% { background-color: #f0f9ff; }
+    100% { background-color: transparent; }
+}
+
+.highlight-new {
+    animation: highlight 2s ease;
+}
+</style>
+{% endblock %}

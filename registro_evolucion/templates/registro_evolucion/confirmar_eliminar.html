@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Informe Final{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <!-- Icono de advertencia -->
+        <div class="text-center mb-4">
+            <div class="text-6xl text-red-500 mb-4">⚠️</div>
+            <h1 class="text-2xl font-bold text-gray-900">Eliminar Informe Final</h1>
+        </div>
+
+        <!-- Mensaje de confirmación -->
+        <div class="text-center mb-6">
+            <p class="text-gray-700 mb-2">¿Está seguro que desea eliminar el informe final de?</p>
+            <p class="font-semibold text-lg text-gray-900">{{ informe.estudiante.nombres }} {{ informe.estudiante.apellido_paterno }}</p>
+            <p class="text-sm text-gray-600">Gestión: {{ informe.gestion }} - Semestre: {{ informe.semestre_programa }}</p>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-red-700 text-sm">
+                <strong>⚠️ Advertencia:</strong> Esta acción no se puede deshacer. Se eliminarán todos los datos asociados a este informe.
+            </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'registro_evolucion:lista_informes' %}" 
+               class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 font-medium">
+                Cancelar
+            </a>
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-medium">
+                    🗑️ Eliminar Definitivamente
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

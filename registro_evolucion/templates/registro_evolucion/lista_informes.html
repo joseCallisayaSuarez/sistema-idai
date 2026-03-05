@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Informes Finales{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header Mejorado -->
+    <div class="page-header">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">📋 Informes Finales</h1>
+                <p class="text-blue-100 opacity-90">Gestión completa de informes finales de estudiantes</p>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold">{{ todos_estudiantes.count }}</div>
+                <div class="text-blue-100 text-sm">Estudiantes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-red-50 border-red-200 text-red-800{% endif %} border rounded-lg p-4">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BUSCADOR SIMPLE Y FUNCIONAL -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">🔍 Buscar Estudiantes</h3>
+            <span class="text-sm text-gray-500" id="contadorResultados">
+                Mostrando {{ todos_estudiantes.count }} estudiantes
+            </span>
+        </div>
+        <div class="relative">
+            <input type="text" id="buscadorInput" 
+                   class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="Buscar por nombre, apellido, documento, RUDE o grado...">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-400">🔍</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Todos los Estudiantes -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-800">🎓 Todos los Estudiantes</h2>
+                    <p class="text-blue-600 text-sm mt-1">Busca y filtra estudiantes para elaborar informes finales</p>
+                </div>
+                <div class="text-sm text-blue-700">
+                    <span class="bg-blue-100 px-3 py-1 rounded-full">
+                        Total: <strong>{{ todos_estudiantes.count }}</strong> estudiantes
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre del Estudiante</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">C.I./Documento</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sesiones Completadas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody" class="bg-white divide-y divide-gray-200">
+                    {% for estudiante in todos_estudiantes %}
+                    <tr class="hover:bg-gray-50 fila-estudiante {% if estudiante.agenda.sesiones_completadas == 24 %}bg-green-50{% endif %}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if estudiante.agenda.sesiones_completadas == 24 %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    ✅ COMPLETADO
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    📝 DISPONIBLE
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900">
+                                {{ estudiante.nombres }} {{ estudiante.apellido_paterno }} {{ estudiante.apellido_materno }}
+                            </div>
+                            <div class="text-sm text-gray-500">RUDE: {{ estudiante.codigo_rude }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ estudiante.documento_identidad }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ estudiante.grado }} {{ estudiante.nivel }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col items-center">
+                                {% if estudiante.agenda %}
+                                    <span class="{% if estudiante.agenda.sesiones_completadas == 24 %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %} px-2 py-1 rounded-full text-xs font-medium">
+                                        {{ estudiante.agenda.sesiones_completadas }}/24 sesiones
+                                    </span>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                        <div class="{% if estudiante.agenda.sesiones_completadas == 24 %}bg-green-600{% else %}bg-blue-600{% endif %} h-2 rounded-full" 
+                                             style="width: {% widthratio estudiante.agenda.sesiones_completadas 24 100 %}%"></div>
+                                    </div>
+                                {% else %}
+                                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        Sin agenda
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'registro_evolucion:crear_informe_estudiante' estudiante.id %}" 
+                               class="{% if estudiante.agenda.sesiones_completadas == 24 %}bg-green-600 hover:bg-green-700{% else %}bg-blue-600 hover:bg-blue-700{% endif %} text-white px-4 py-2 rounded-lg inline-flex items-center text-sm">
+                                📝 Crear Informe
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No hay estudiantes registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Lista de Informes Existentes -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-indigo-800">📋 Informes Finales Existentes</h2>
+                    <p class="text-indigo-600 text-sm mt-1">Lista de todos los informes finales elaborados</p>
+                </div>
+                <div class="text-sm text-indigo-700">
+                    <span class="bg-indigo-100 px-3 py-1 rounded-full">
+                        Total: <strong>{{ informes.count }}</strong> informes
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            {% if informes %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gestión</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semestre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promedio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Docente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for informe in informes %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900">
+                                {{ informe.estudiante.nombres }} {{ informe.estudiante.apellido_paterno }}
+                            </div>
+                            <div class="text-sm text-gray-500">RUDE: {{ informe.codigo_rude }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ informe.grado }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ informe.gestion }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ informe.semestre_programa }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col items-center">
+                                <span class="{% if informe.promedio_progreso >= 5.0 %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %} px-2 py-1 rounded-full text-xs font-medium">
+                                    {{ informe.promedio_progreso|floatformat:1 }}/10
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="{% if informe.estado == 'BORRADOR' %}bg-yellow-100 text-yellow-800{% elif informe.estado == 'COMPLETADO' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %} px-2 py-1 rounded-full text-xs font-medium">
+                                {{ informe.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ informe.docente.get_full_name|default:informe.docente.username }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ informe.fecha_creacion|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+    <div class="flex flex-col space-y-1">
+        <a href="{% url 'registro_evolucion:ver_informe' informe.pk %}" 
+           class="bg-blue-600 text-white px-3 py-1 rounded text-center hover:bg-blue-700">
+            Ver
+        </a>
+        <a href="{% url 'registro_evolucion:generar_pdf' informe.pk %}" target="_blank" 
+           class="bg-purple-600 text-white px-3 py-1 rounded text-center hover:bg-purple-700">
+            PDF
+        </a>
+        <a href="{% url 'registro_evolucion:editar_informe' informe.pk %}" 
+           class="bg-green-600 text-white px-3 py-1 rounded text-center hover:bg-green-700">
+            Editar
+        </a>
+        <a href="{% url 'registro_evolucion:eliminar_informe' informe.pk %}" 
+           class="bg-red-600 text-white px-3 py-1 rounded text-center hover:bg-red-700">
+            Eliminar
+        </a>
+    </div>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📋</div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay informes finales</h3>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT DIRECTAMENTE EN EL BODY - 100% FUNCIONAL -->
+<script>
+    // BUSCADOR SIMPLE Y FUNCIONAL
+    console.log('🔄 Iniciando buscador...');
+    
+    function buscar() {
+        console.log('🔍 Ejecutando búsqueda...');
+        const texto = document.getElementById('buscadorInput').value.toLowerCase();
+        const filas = document.querySelectorAll('.fila-estudiante');
+        let encontrados = 0;
+        
+        console.log('Texto buscado:', texto);
+        console.log('Filas totales:', filas.length);
+        
+        filas.forEach(fila => {
+            const textoFila = fila.textContent.toLowerCase();
+            if (textoFila.includes(texto)) {
+                fila.style.display = '';
+                encontrados++;
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('contadorResultados').textContent = 
+            `Mostrando ${encontrados} de {{ todos_estudiantes.count }} estudiantes`;
+        
+        console.log('✅ Encontrados:', encontrados);
+    }
+    
+    // Configurar el evento cuando la página cargue
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ DOM cargado, configurando buscador...');
+        const input = document.getElementById('buscadorInput');
+        if (input) {
+            input.addEventListener('input', buscar);
+            console.log('✅ Buscador configurado correctamente');
+        } else {
+            console.error('❌ No se encontró el input del buscador');
+        }
+    });
+    
+    console.log('📝 Script de búsqueda cargado');
+</script>
+{% endblock %}

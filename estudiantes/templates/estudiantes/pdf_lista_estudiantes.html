@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Estudiantes</title>
+    <style>
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 8px;
+            line-height: 1.1;
+            color: #2c3e50;
+            margin: 0;
+            padding: 5px;
+            background: white;
+        }
+        
+        /* Encabezado simplificado */
+        .header-container {
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .programa-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+        
+        .codigo-info {
+            font-size: 7px;
+            color: #7f8c8d;
+            margin: 1px 0;
+        }
+        
+        .ddelp-title {
+            font-size: 8px;
+            font-weight: 600;
+            color: #3498db;
+            margin: 1px 0;
+        }
+        
+        .centro-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 1px 0;
+            text-transform: uppercase;
+        }
+
+        /* Título principal */
+        .main-title {
+            text-align: center;
+            margin: 8px 0;
+            padding: 6px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Información del filtro */
+        .filter-info {
+            text-align: center;
+            margin: 6px 0;
+            padding: 4px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            font-size: 8px;
+            color: #7f8c8d;
+        }
+
+        /* Tabla de estudiantes */
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 6px;
+            margin: 6px 0;
+            table-layout: fixed;
+        }
+        
+        .students-table th {
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+            padding: 4px 2px;
+            text-align: left;
+            border: 1px solid #2980b9;
+            word-wrap: break-word;
+        }
+        
+        .students-table td {
+            padding: 3px 2px;
+            border: 1px solid #e1e8ed;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        
+        .students-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-small {
+            font-size: 5.5px;
+        }
+        
+        .footer {
+            margin-top: 10px;
+            padding-top: 5px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 7px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .total-count {
+            background: #e8f5e8;
+            padding: 3px 6px;
+            border-radius: 2px;
+            font-weight: 600;
+            color: #27ae60;
+            font-size: 7px;
+        }
+
+        /* Estilos para programas de apoyo */
+        .programa-apoyo {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 1px 3px;
+            border-radius: 2px;
+            margin: 1px;
+            display: inline-block;
+            font-size: 5.5px;
+        }
+        
+        .evaluacion-requerida {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 5.5px;
+        }
+
+        /* Para evitar problemas de página */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Ajustes específicos de columnas */
+        .col-numero { width: 2.5%; }
+        .col-nombres { width: 8%; }
+        .col-apellidos { width: 7%; }
+        .col-documento { width: 6%; }
+        .col-rude { width: 8%; }
+        .col-fecha { width: 5%; }
+        .col-edad { width: 3%; }
+        .col-genero { width: 3%; }
+        .col-nivel { width: 4%; }
+        .col-grado { width: 3%; }
+        .col-semestre { width: 4%; }
+        .col-gestion { width: 4%; }
+        .col-colegio { width: 8%; }
+        .col-programa { width: 12%; }
+        .col-evaluacion { width: 8%; }
+    </style>
+</head>
+<body>
+    <!-- Encabezado simplificado SIN IMÁGENES -->
+    <div class="header-container">
+        <div class="programa-title">
+            Programa de Atención Educativa a Estudiantes con Dificultades en el Aprendizaje
+        </div>
+        <div class="codigo-info">COD. SIE: 80730696 • COD EDIF.ESC. 80730433 • Fundado: 6 de julio de 1966</div>
+        <div class="ddelp-title">18 DDELP-2</div>
+        <div class="centro-title">Centro de Educación Especial "Adaptación Infantil"</div>
+        <div class="codigo-info">R.A. 1753/2021</div>
+    </div>
+
+    <!-- Título principal -->
+    <div class="main-title">
+        LISTA DE ESTUDIANTES REGISTRADOS - PROGRAMA DE APOYO Y EVALUACIÓN
+    </div>
+
+    <!-- Información del filtro -->
+    <div class="filter-info">
+        {% if semestre_display %}
+            <strong>Semestre:</strong> {{ semestre_display }} 
+        {% endif %}
+        {% if gestion %}
+            <strong>• Gestión:</strong> {{ gestion }}
+        {% endif %}
+        <span class="total-count">• Total: {{ total_estudiantes }} estudiantes</span>
+    </div>
+
+    <!-- Tabla de estudiantes -->
+    <table class="students-table">
+        <thead>
+            <tr>
+                <th class="col-numero">N°</th>
+                <th class="col-nombres">Nombres</th>
+                <th class="col-apellidos">Apellido Paterno</th>
+                <th class="col-apellidos">Apellido Materno</th>
+                <th class="col-documento">C.I./Documento</th>
+                <th class="col-rude">Código RUDE</th>
+                <th class="col-fecha">Fecha Nac.</th>
+                <th class="col-edad">Edad</th>
+                <th class="col-genero">Género</th>
+                <th class="col-nivel">Nivel</th>
+                <th class="col-grado">Grado</th>
+                <th class="col-semestre">Semestre</th>
+                <th class="col-gestion">Gestión</th>
+                <th class="col-colegio">Colegio</th>
+                <th class="col-programa">Programa de Apoyo</th>
+                <th class="col-evaluacion">Evaluación Requerida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in estudiantes %}
+            <tr>
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td>{{ estudiante.nombres }}</td>
+                <td>{{ estudiante.apellido_paterno }}</td>
+                <td>{{ estudiante.apellido_materno|default:"" }}</td>
+                <td>{{ estudiante.documento_identidad }}</td>
+                <td class="text-small">{{ estudiante.codigo_rude }}</td>
+                <td class="text-center">{{ estudiante.fecha_nacimiento|date:"d/m/Y" }}</td>
+                <td class="text-center">{{ estudiante.edad }}</td>
+                <td class="text-center">
+                    {% if estudiante.genero == 'M' %}M{% else %}F{% endif %}
+                </td>
+                <td class="text-center">{{ estudiante.nivel }}</td>
+                <td class="text-center">{{ estudiante.grado }}</td>
+                <td class="text-center">
+                    {% if estudiante.semestre == '1' %}1ro{% else %}2do{% endif %}
+                </td>
+                <td class="text-center">{{ estudiante.gestion_ingreso }}</td>
+                <td class="text-small">{{ estudiante.colegio_procedencia|default:"-"|truncatechars:15 }}</td>
+                <td class="text-small">
+                    {% if estudiante.programa_apoyo %}
+                        {% for programa in estudiante.programa_apoyo %}
+                            <div class="programa-apoyo">{{ programa }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-small" style="color: #7f8c8d;">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if estudiante.evaluacion_requerida and estudiante.evaluacion_requerida != 'Ninguna' %}
+                        <div class="evaluacion-requerida">{{ estudiante.evaluacion_requerida }}</div>
+                    {% else %}
+                        <span class="text-small" style="color: #7f8c8d;">Ninguna</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="16" class="text-center" style="padding: 10px; color: #7f8c8d;">
+                    No hay estudiantes registrados
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div style="margin-bottom: 2px;">
+            <strong>Documento generado el:</strong> {% now "d/m/Y H:i" %}
+        </div>
+        <div>
+            Centro de Educación Especial "Adaptación Infantil" - 18 DDELP-2
+        </div>
+    </div>
+</body>
+</html>

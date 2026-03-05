@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Estadísticas{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con Selector de Periodo -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 space-y-4 lg:space-y-0">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">📊 Estadísticas Generales</h1>
+            <p class="text-gray-600 mt-1">{{ periodo_actual.año }} - {{ periodo_actual.semestre|yesno:"Segundo Semestre,Primer Semestre" }}</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <!-- Selector de Periodo MEJORADO -->
+            <form method="get" class="flex space-x-2 bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Año:</label>
+                    <select name="año" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        {% for año in años_disponibles %}
+                        <option value="{{ año }}" {% if año == periodo_actual.año %}selected{% endif %}>
+                            {{ año }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Semestre:</label>
+                    <select name="semestre" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="1" {% if periodo_actual.semestre == '1' %}selected{% endif %}>Primer Semestre</option>
+                        <option value="2" {% if periodo_actual.semestre == '2' %}selected{% endif %}>Segundo Semestre</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition duration-200">
+                    🔄 Ver Estadísticas
+                </button>
+            </form>
+            
+            <form method="post" action="{% url 'estadisticas:actualizar_estadisticas' %}">
+                {% csrf_token %}
+                <input type="hidden" name="año" value="{{ periodo_actual.año }}">
+                <input type="hidden" name="semestre" value="{{ periodo_actual.semestre }}">
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium transition duration-200">
+                    📈 Actualizar Datos
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-red-50 border-red-200 text-red-800{% endif %} border rounded-lg p-4">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Resumen General -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Estudiantes -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 transform hover:scale-105 transition duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Estudiantes</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ estadistica_global.total_estudiantes }}</p>
+                </div>
+                <div class="text-blue-500 text-2xl">👥</div>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                ♂️ {{ estadistica_global.estudiantes_masculinos }} | ♀️ {{ estadistica_global.estudiantes_femeninos }}
+            </div>
+        </div>
+
+        <!-- Agendas Activas -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 transform hover:scale-105 transition duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Agendas Activas</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ estadistica_global.total_agendas_activas }}</p>
+                </div>
+                <div class="text-green-500 text-2xl">📅</div>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                {{ estadistica_global.promedio_progreso|floatformat:1 }}/24 progreso promedio
+            </div>
+        </div>
+
+        <!-- Tasa de Asistencia -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 transform hover:scale-105 transition duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Asistencia Global</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ estadistica_global.tasa_asistencia_global|floatformat:1 }}%</p>
+                </div>
+                <div class="text-purple-500 text-2xl">✅</div>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                {{ estadistica_global.total_sesiones_completadas }} sesiones
+            </div>
+        </div>
+
+        <!-- Estudiantes Graduados -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500 transform hover:scale-105 transition duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Dados de alta</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ estadistica_global.estudiantes_graduados }}</p>
+                </div>
+                <div class="text-orange-500 text-2xl">🎓</div>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                24/24 sesiones completadas
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución por Nivel -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">IFC</h3>
+                <span class="text-2xl font-bold text-blue-600">{{ estadistica_global.estudiantes_ifc }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-blue-500 h-3 rounded-full transition-all duration-1000"
+                     style="width: {% widthratio estadistica_global.estudiantes_ifc estadistica_global.total_estudiantes 100 %}%">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">PCV</h3>
+                <span class="text-2xl font-bold text-green-600">{{ estadistica_global.estudiantes_pcv }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-green-500 h-3 rounded-full transition-all duration-1000"
+                     style="width: {% widthratio estadistica_global.estudiantes_pcv estadistica_global.total_estudiantes 100 %}%">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">SCP</h3>
+                <span class="text-2xl font-bold text-purple-600">{{ estadistica_global.estudiantes_scp }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-purple-500 h-3 rounded-full transition-all duration-1000"
+                     style="width: {% widthratio estadistica_global.estudiantes_scp estadistica_global.total_estudiantes 100 %}%">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estudiantes por Programa -->
+    <!-- Estudiantes por Programa -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-900">📈 Distribución por Programa de Apoyo - {{ periodo_actual.año }}-S{{ periodo_actual.semestre }}</h2>
+        <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            {{ estadisticas_programas|length }} programas
+        </span>
+    </div>
+    
+    {% if estadisticas_programas %}
+    <div class="space-y-4">
+        {% for programa in estadisticas_programas %}
+        <div class="group p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-blue-50 transition duration-200">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-lg font-semibold text-gray-800 group-hover:text-blue-700 transition duration-200">
+                    {{ programa.programa|title }}
+                </span>
+                <span class="text-lg font-bold text-blue-600 bg-white px-3 py-1 rounded-full shadow-sm">
+                    {{ programa.total_estudiantes }} estudiante{{ programa.total_estudiantes|pluralize }}
+                </span>
+            </div>
+            
+            <!-- Barra de progreso CORREGIDA -->
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                {% if estadistica_global.total_estudiantes > 0 %}
+                <div class="bg-gradient-to-r from-blue-400 to-purple-500 h-3 rounded-full transition-all duration-1000 ease-out" 
+                     style="width: {% widthratio programa.total_estudiantes estadistica_global.total_estudiantes 100 %}%">
+                </div>
+                {% else %}
+                <div class="bg-gray-400 h-3 rounded-full" style="width: 0%"></div>
+                {% endif %}
+            </div>
+            
+            <div class="flex justify-between text-sm text-gray-600 mt-2">
+                <span class="flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    {{ programa.tasa_completacion|floatformat:1 }}% completación
+                </span>
+                <span class="flex items-center">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    {{ programa.sesiones_totales }} sesiones
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <div class="text-gray-400 text-6xl mb-4">📊</div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay datos de programas para {{ periodo_actual.año }}-S{{ periodo_actual.semestre }}</h3>
+        <p class="text-gray-500 mb-6">Haz clic en "Actualizar Datos" para generar las estadísticas</p>
+    </div>
+    {% endif %}
+</div>
+
+    <!-- Información de Actualización -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="text-blue-500 mr-3 text-xl">🕒</div>
+                <div>
+                    <p class="text-sm font-medium text-blue-800">Última actualización</p>
+                    <p class="text-sm text-blue-600">{{ estadistica_global.fecha_calculo|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+            <div class="text-sm text-blue-600">
+                Sistema con {{ total_estudiantes }} estudiantes registrados
+            </div>
+        </div>
+    </div>
+    <!-- En la sección de botones, después del formulario de actualización -->
+<a href="{% url 'estadisticas:generar_pdf_estadisticas' %}?año={{ periodo_actual.año }}&semestre={{ periodo_actual.semestre }}" 
+   target="_blank"
+   class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium transition duration-200 flex items-center">
+    📄 Generar PDF
+</a>
+</div>
+
+
+<style>
+    .bg-gradient-to-r {
+        background-size: 200% 100%;
+        background-position: left bottom;
+        transition: all 2s ease-in-out;
+    }
+    
+    .group:hover .bg-gradient-to-r {
+        background-position: right bottom;
+    }
+</style>
+
+<script>
+    // Animación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animar barras de progreso
+        const progressBars = document.querySelectorAll('.bg-gradient-to-r, .bg-blue-500, .bg-green-500, .bg-purple-500');
+        progressBars.forEach(bar => {
+            const currentWidth = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = currentWidth;
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% block title %}Detalle de Agenda - {{ agenda.estudiante }}{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 border-b-2 border-blue-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-blue-700">👁️ Detalle de Agenda</h1>
+            <p class="text-gray-600 mt-1">Información completa de la agenda del estudiante</p>
+        </div>
+        <div class="flex space-x-4">
+            <a href="{% url 'agenda:lista_agendas' %}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                ← Volver
+            </a>
+            <!-- BOTÓN PDF -->
+            <a href="{% url 'agenda:generar_pdf_agenda' agenda.id %}" target="_blank" 
+               class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center">
+                📄 Generar PDF
+            </a>
+            <a href="{% url 'agenda:editar_agenda' agenda.id %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                ✏️ Editar
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Estudiante -->
+    <div class="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
+        <h2 class="text-xl font-semibold text-blue-800 mb-4">👤 Información del Estudiante</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="font-medium text-gray-700">Nombre completo:</p>
+                <p class="text-gray-900">{{ agenda.estudiante.nombres }} {{ agenda.estudiante.apellido_paterno }} {{ agenda.estudiante.apellido_materno }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-700">Cédula de Identidad:</p>
+                <p class="text-gray-900">{{ agenda.estudiante.documento_identidad }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-700">Programas de Apoyo:</p>
+                <p class="text-gray-900">
+                    {% for programa in agenda.estudiante.programa_apoyo %}
+                        <span class="inline-block bg-blue-100 px-2 py-1 rounded text-sm mb-1">{{ programa }}</span>
+                    {% empty %}
+                        <span class="text-gray-500">No asignado</span>
+                    {% endfor %}
+                </p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-700">Código RUDE:</p>
+                <p class="text-gray-900">{{ agenda.estudiante.codigo_rude }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-700">Fecha de Nacimiento:</p>
+                <p class="text-gray-900">{{ agenda.estudiante.fecha_nacimiento|date:"d/m/Y" }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-700">Evaluación Requerida:</p>
+                <p class="text-gray-900">
+                    {% if agenda.estudiante.evaluacion_requerida and agenda.estudiante.evaluacion_requerida != 'Ninguna' %}
+                        <span class="inline-block bg-purple-100 px-2 py-1 rounded text-sm">{{ agenda.estudiante.evaluacion_requerida }}</span>
+                    {% else %}
+                        <span class="text-gray-500">Ninguna</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de la Agenda -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Configuración de Horarios -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">⏰ Configuración de Horarios</h3>
+            <div class="space-y-3">
+                <div>
+                    <p class="font-medium text-gray-700">Día de la semana:</p>
+                    <p class="text-gray-900">
+                        <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                            {{ agenda.get_dia_semana_display }}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Horario:</p>
+                    <p class="text-gray-900">{{ agenda.hora_inicio|time:"H:i" }} - {{ agenda.hora_fin|time:"H:i" }}</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Fecha de inicio:</p>
+                    <p class="text-gray-900">{{ agenda.fecha_inicio|date:"d/m/Y" }}</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Fecha de creación:</p>
+                    <p class="text-gray-900">{{ agenda.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Estadísticas</h3>
+            <div class="space-y-4">
+                <div>
+                    <p class="font-medium text-gray-700">Progreso de sesiones:</p>
+                    <div class="mt-2">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Sesiones completadas</span>
+                            <span>{{ agenda.sesiones_completadas }}/24</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-green-600 h-3 rounded-full" 
+                                 style="width: {% widthratio agenda.sesiones_completadas 24 100 %}%">
+                            </div>
+                        </div>
+                        <div class="text-right text-xs text-gray-500 mt-1">
+                            {% widthratio agenda.sesiones_completadas 24 100 %}% completado
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Promedio de Progreso:</p>
+                    <p class="text-gray-900">
+                        {% if promedio_progreso %}
+                            <span class="text-lg font-bold 
+                                {% if promedio_progreso >= 8 %}text-green-600
+                                {% elif promedio_progreso >= 6 %}text-blue-600
+                                {% elif promedio_progreso >= 4 %}text-yellow-600
+                                {% else %}text-red-600
+                                {% endif %}">
+                                {{ promedio_progreso|floatformat:1 }}/10
+                            </span>
+                        {% else %}
+                            <span class="text-gray-500">No evaluado</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Estado:</p>
+                    <p class="{% if agenda.activo %}text-green-600{% else %}text-red-600{% endif %} font-semibold">
+                        {% if agenda.activo %}
+                            ✅ Activa
+                        {% else %}
+                            ❌ Inactiva
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Sesiones restantes:</p>
+                    <p class="text-gray-900 font-semibold">
+                        {% with restantes=24|add:agenda.sesiones_completadas %}
+                            {% if restantes > 24 %}
+                                0 sesiones
+                            {% else %}
+                                {{ 24|add:agenda.sesiones_completadas|add:"-24" }} sesiones
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Sesiones -->
+    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">📅 Sesiones Programadas</h3>
+            <div class="text-sm text-gray-600">
+                Total: <span class="font-semibold">{{ sesiones|length }} sesiones</span>
+            </div>
+        </div>
+        
+        {% if sesiones %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progreso</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observaciones</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Justificación</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for sesion in sesiones %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            <div class="font-medium">{{ sesion.fecha_programada|date:"d/m/Y" }}</div>
+                            <div class="text-xs text-gray-500">{{ sesion.fecha_programada|date:"l" }}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                {% if sesion.estado == 'programada' %}bg-yellow-100 text-yellow-800
+                                {% elif sesion.estado == 'asistio' %}bg-green-100 text-green-800
+                                {% elif sesion.estado == 'ausente' %}bg-red-100 text-red-800
+                                {% elif sesion.estado == 'justificada' %}bg-orange-100 text-orange-800
+                                {% endif %}">
+                                {% if sesion.estado == 'programada' %}⏳
+                                {% elif sesion.estado == 'asistio' %}✅
+                                {% elif sesion.estado == 'ausente' %}❌
+                                {% elif sesion.estado == 'justificada' %}📝
+                                {% endif %}
+                                {{ sesion.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {% if sesion.progreso %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                    {% if sesion.progreso >= 8 %}bg-green-100 text-green-800
+                                    {% elif sesion.progreso >= 6 %}bg-blue-100 text-blue-800
+                                    {% elif sesion.progreso >= 4 %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ sesion.progreso }}/10
+                                </span>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {% if sesion.observaciones %}
+                                <div class="max-w-xs">
+                                    <div class="truncate" title="{{ sesion.observaciones }}">
+                                        {{ sesion.observaciones|truncatewords:8 }}
+                                    </div>
+                                    {% if sesion.observaciones|wordcount > 8 %}
+                                    <button onclick="alert('{{ sesion.observaciones|escapejs }}')" 
+                                            class="text-blue-600 text-xs hover:text-blue-800 mt-1">
+                                        Ver completo
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {% if sesion.justificacion %}
+                                <div class="max-w-xs">
+                                    <div class="truncate" title="{{ sesion.justificacion }}">
+                                        {{ sesion.justificacion|truncatewords:8 }}
+                                    </div>
+                                    {% if sesion.justificacion|wordcount > 8 %}
+                                    <button onclick="alert('{{ sesion.justificacion|escapejs }}')" 
+                                            class="text-blue-600 text-xs hover:text-blue-800 mt-1">
+                                        Ver completo
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'agenda:registrar_asistencia' sesion.id %}" 
+                                   class="text-blue-600 hover:text-blue-900 font-medium text-xs bg-blue-50 px-2 py-1 rounded">
+                                    📝 Registrar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="text-gray-400 text-6xl mb-4">📅</div>
+            <p class="text-gray-500 text-lg mb-2">No hay sesiones programadas para esta agenda.</p>
+            <p class="text-gray-400 text-sm">Las sesiones se generan automáticamente al crear la agenda.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Acciones -->
+    <div class="mt-6 flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        {% if agenda.activo %}
+        <form method="POST" action="{% url 'agenda:desactivar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+                   onclick="return confirm('¿Estás seguro de pausar esta agenda?')">
+                ⏸️ Pausar Agenda
+            </button>
+        </form>
+        {% else %}
+        <form method="POST" action="{% url 'agenda:activar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                   onclick="return confirm('¿Estás seguro de activar esta agenda?')">
+                ▶️ Activar Agenda
+            </button>
+        </form>
+        {% endif %}
+        
+        <form method="POST" action="{% url 'agenda:eliminar_agenda' agenda.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" 
+                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                   onclick="return confirm('¿Estás seguro de eliminar esta agenda? Esta acción no se puede deshacer.')">
+                🗑️ Eliminar Agenda
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

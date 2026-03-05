@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% block title %}Calendario General - Agenda{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 border-b-2 border-blue-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-blue-700">🗓️ Calendario de Sesiones</h1>
+            <p class="text-gray-600">Haz clic en cualquier sesión para registrar asistencia</p>
+        </div>
+        <div class="flex space-x-4">
+            <a href="{% url 'agenda:buscar_estudiante' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                + Nueva Agenda
+            </a>
+            <a href="{% url 'agenda:lista_agendas' %}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                📋 Ver Todas las Agendas
+            </a>
+            <a href="{% url 'backups:dashboard' %}" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+        💾 Copias de Seguridad
+    </a>
+        </div>
+    </div>
+
+    <!-- Navegación de Mes -->
+    <div class="flex justify-between items-center mb-6 bg-blue-50 p-4 rounded-lg">
+        <a href="?year={{ año_anterior }}&month={{ mes_anterior }}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            ← {{ mes_anterior }}/{{ año_anterior }}
+        </a>
+        
+        <h2 class="text-xl font-bold text-blue-800">{{ nombre_mes }} {{ año_actual }}</h2>
+        
+        <a href="?year={{ año_siguiente }}&month={{ mes_siguiente }}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            {{ mes_siguiente }}/{{ año_siguiente }} →
+        </a>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="grid grid-cols-4 gap-2 mb-6 text-xs">
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-yellow-400 rounded mr-2"></div>
+            <span>Programada</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-green-500 rounded mr-2"></div>
+            <span>Asistió</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-red-500 rounded mr-2"></div>
+            <span>Ausente</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-orange-500 rounded mr-2"></div>
+            <span>Justificada</span>
+        </div>
+    </div>
+
+    <!-- Grid del Calendario -->
+    <div class="grid grid-cols-7 gap-2 mb-2">
+        <div class="text-center font-semibold text-gray-600 p-2">Lun</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Mar</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Mié</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Jue</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Vie</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Sáb</div>
+        <div class="text-center font-semibold text-gray-600 p-2">Dom</div>
+    </div>
+
+    <div class="grid grid-cols-7 gap-2">
+        {% for dia in calendario %}
+        <div class="min-h-32 border rounded-lg p-2 
+            {% if dia.es_hoy %}bg-blue-50 border-blue-300{% elif not dia.es_del_mes %}bg-gray-100 border-gray-200 text-gray-400{% else %}border-gray-200{% endif %}">
+            
+            <!-- Número del día -->
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-sm font-semibold 
+                    {% if dia.es_hoy %}text-blue-700
+                    {% elif not dia.es_del_mes %}text-gray-400
+                    {% endif %}">
+                    {{ dia.fecha.day }}
+                </span>
+                {% if dia.es_hoy %}
+                <span class="text-xs bg-blue-600 text-white px-1 rounded">Hoy</span>
+                {% endif %}
+            </div>
+
+            <!-- Sesiones del día -->
+            <div class="space-y-1">
+                {% for sesion in dia.sesiones %}
+                <div class="text-xs p-1 rounded cursor-pointer hover:shadow-md transition-all
+                    {% if sesion.estado == 'programada' %}bg-yellow-100 border border-yellow-300
+                    {% elif sesion.estado == 'asistio' %}bg-green-100 border border-green-300
+                    {% elif sesion.estado == 'ausente' %}bg-red-100 border border-red-300
+                    {% elif sesion.estado == 'justificada' %}bg-orange-100 border border-orange-300
+                    {% endif %}"
+                    onclick="abrirModal('{{ sesion.id }}')">
+                    
+                    <div class="font-semibold truncate" title="{{ sesion.agenda.estudiante.nombres }} {{ sesion.agenda.estudiante.apellido_paterno }}">
+                        {{ sesion.agenda.estudiante.nombres }} {{ sesion.agenda.estudiante.apellido_paterno|slice:":1" }}.
+                    </div>
+                    <div class="text-xs opacity-75">
+                        {{ sesion.agenda.hora_inicio|time:"H:i" }}
+                        {% if sesion.estado != 'programada' %}
+                        - <strong>{{ sesion.get_estado_display }}</strong>
+                        {% endif %}
+                    </div>
+                    <!-- NUEVO: Mostrar progreso si existe -->
+                    {% if sesion.progreso %}
+                    <div class="text-xs mt-1">
+                        <span class="inline-flex items-center px-1 rounded 
+                            {% if sesion.progreso >= 8 %}bg-green-200 text-green-800
+                            {% elif sesion.progreso >= 6 %}bg-blue-200 text-blue-800
+                            {% elif sesion.progreso >= 4 %}bg-yellow-200 text-yellow-800
+                            {% else %}bg-red-200 text-red-800
+                            {% endif %}">
+                            ★ {{ sesion.progreso }}/10
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if not dia.sesiones and dia.es_del_mes %}
+            <div class="text-gray-400 text-xs text-center mt-4">Sin sesiones</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal para Registrar Asistencia -->
+<div id="modalAsistencia" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-bold text-blue-700 mb-4" id="modalTitulo">Registrar Asistencia</h3>
+        
+        <div id="modalContenido">
+            <!-- El contenido se carga via JavaScript -->
+        </div>
+        
+        <div class="flex justify-end space-x-2 mt-4">
+            <button onclick="cerrarModal()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function abrirModal(sesionId) {
+    const modal = document.getElementById('modalAsistencia');
+    const modalContenido = document.getElementById('modalContenido');
+    
+    // Cargar formulario de asistencia
+    modalContenido.innerHTML = `
+        <div class="text-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Cargando...</p>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    
+    // Cargar formulario real
+    fetch('/agenda/registrar-asistencia/' + sesionId + '/')
+        .then(response => response.text())
+        .then(html => {
+            // Extraer solo el formulario del HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const form = doc.querySelector('form');
+            
+            if (form) {
+                modalContenido.innerHTML = form.outerHTML;
+                
+                // Agregar clases a los elementos del formulario
+                modalContenido.querySelectorAll('input, select, textarea').forEach(campo => {
+                    campo.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-md', 
+                                      'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+                });
+
+                // NUEVO: Inicializar la lógica de mostrar/ocultar justificación
+                inicializarJustificacion();
+            }
+        });
+}
+
+function cerrarModal() {
+    document.getElementById('modalAsistencia').classList.add('hidden');
+}
+
+// NUEVA FUNCIÓN: Manejar mostrar/ocultar campo de justificación
+function inicializarJustificacion() {
+    const estadoSelect = document.getElementById('id_estado');
+    const justificacionContainer = document.getElementById('justificacion-container');
+    const justificacionTextarea = document.getElementById('id_justificacion');
+    
+    function toggleJustificacion() {
+        if (estadoSelect && estadoSelect.value === 'justificada') {
+            if (justificacionContainer) {
+                justificacionContainer.style.display = 'block';
+            }
+            if (justificacionTextarea) {
+                justificacionTextarea.required = true;
+            }
+        } else {
+            if (justificacionContainer) {
+                justificacionContainer.style.display = 'none';
+            }
+            if (justificacionTextarea) {
+                justificacionTextarea.required = false;
+            }
+        }
+    }
+    
+    if (estadoSelect) {
+        estadoSelect.addEventListener('change', toggleJustificacion);
+        // Ejecutar al cargar para establecer estado inicial
+        toggleJustificacion();
+    }
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalAsistencia').addEventListener('click', function(e) {
+    if (e.target.id === 'modalAsistencia') {
+        cerrarModal();
+    }
+});
+
+// NUEVO: También necesitas asegurarte de que el formulario en el modal tenga los IDs correctos
+// Esta función se ejecuta después de cargar el formulario en el modal
+function configurarFormularioModal() {
+    // Buscar el campo de estado y el contenedor de justificación dentro del modal
+    const estadoSelect = document.querySelector('#modalAsistencia #id_estado');
+    const justificacionContainer = document.querySelector('#modalAsistencia #justificacion-container');
+    const justificacionTextarea = document.querySelector('#modalAsistencia #id_justificacion');
+    
+    if (estadoSelect && justificacionContainer) {
+        function toggleJustificacionModal() {
+            if (estadoSelect.value === 'justificada') {
+                justificacionContainer.style.display = 'block';
+                if (justificacionTextarea) {
+                    justificacionTextarea.required = true;
+                }
+            } else {
+                justificacionContainer.style.display = 'none';
+                if (justificacionTextarea) {
+                    justificacionTextarea.required = false;
+                }
+            }
+        }
+        
+        estadoSelect.addEventListener('change', toggleJustificacionModal);
+        toggleJustificacionModal(); // Estado inicial
+    }
+}
+
+// Modificar la función abrirModal para llamar a configurarFormularioModal
+// Reemplaza esta parte en la función abrirModal existente:
+function abrirModal(sesionId) {
+    const modal = document.getElementById('modalAsistencia');
+    const modalContenido = document.getElementById('modalContenido');
+    
+    modalContenido.innerHTML = `
+        <div class="text-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Cargando...</p>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    
+    fetch('/agenda/registrar-asistencia/' + sesionId + '/')
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const form = doc.querySelector('form');
+            
+            if (form) {
+                modalContenido.innerHTML = form.outerHTML;
+                
+                // Agregar clases a los elementos del formulario
+                modalContenido.querySelectorAll('input, select, textarea').forEach(campo => {
+                    campo.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-md', 
+                                      'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+                });
+
+                // NUEVO: Configurar la lógica del formulario después de cargarlo
+                setTimeout(configurarFormularioModal, 100);
+            }
+        });
+}
+
+</script>
+{% endblock %}

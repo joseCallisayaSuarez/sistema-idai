@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmar Restauración - Backup{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="border-b-2 border-red-200 pb-4 mb-6">
+        <h1 class="text-2xl font-bold text-red-700">🚨 Confirmar Restauración del Sistema</h1>
+        <p class="text-gray-600">Estás a punto de restaurar datos desde: <strong>{{ nombre_archivo }}</strong></p>
+    </div>
+
+    <!-- Comparación -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Backup -->
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h3 class="text-lg font-bold text-blue-800 mb-3">📦 DATOS EN EL BACKUP</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span>Apps:</span>
+                    <span class="font-bold">{{ total_apps_backup }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Registros totales:</span>
+                    <span class="font-bold">{{ total_registros_backup }}</span>
+                </div>
+                
+                <div class="mt-4">
+                    <h4 class="font-semibold text-blue-700 mb-2">Detalle por App:</h4>
+                    {% for app_label, info in resumen_backup.items %}
+                    <div class="mb-2 p-2 bg-blue-100 rounded">
+                        <div class="font-medium">{{ app_label }}</div>
+                        <div class="text-sm text-blue-600">
+                            {{ info.modelos }} modelos, {{ info.registros }} registros
+                        </div>
+                        {% if info.detalle %}
+                        <div class="text-xs mt-1">
+                            {% for modelo in info.detalle|slice:":3" %}
+                            <div>• {{ modelo.nombre }}: {{ modelo.count }}</div>
+                            {% endfor %}
+                            {% if info.detalle|length > 3 %}
+                            <div>• ... y {{ info.detalle|length|add:"-3" }} más</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema Actual -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-300">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">🖥️ SISTEMA ACTUAL</h3>
+            <div class="space-y-3">
+                {% for app_label, info in datos_actuales.items %}
+                <div class="mb-2 p-2 {% if info.error %}bg-red-100{% else %}bg-gray-100{% endif %} rounded">
+                    <div class="font-medium">{{ app_label }}</div>
+                    {% if info.error %}
+                    <div class="text-sm text-red-600">{{ info.error }}</div>
+                    {% else %}
+                    <div class="text-sm text-gray-600">
+                        {{ info.modelos }} modelos, {{ info.registros }} registros
+                    </div>
+                    {% if info.detalle %}
+                    <div class="text-xs mt-1">
+                        {% for modelo in info.detalle|slice:":2" %}
+                        <div>• {{ modelo.nombre }}: {{ modelo.count }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Advertencia -->
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <h4 class="font-bold text-red-800 mb-2 flex items-center">
+            <span class="mr-2">⚠️</span> ADVERTENCIA CRÍTICA
+        </h4>
+        <ul class="text-red-700 list-disc list-inside space-y-1">
+            {% if tipo_restauracion == 'completa' %}
+            <li>Esta acción <strong>ELIMINARÁ</strong> todos los datos actuales del sistema</li>
+            <li>Se <strong>SOBREESCRIBIRÁN</strong> los datos con los del backup</li>
+            {% else %}
+            <li>Se <strong>AGREGARÁN</strong> los datos del backup al sistema actual</li>
+            <li>Los registros existentes con mismos IDs serán <strong>ACTUALIZADOS</strong></li>
+            {% endif %}
+            <li>Esta acción <strong>NO SE PUEDE DESHACER</strong></li>
+            <li>El sistema podría quedar inaccesible si hay errores</li>
+        </ul>
+    </div>
+
+    <!-- Formulario de confirmación -->
+    <form method="POST" action="{% url 'backups:restaurar_backup' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Campos ocultos -->
+        <input type="hidden" name="archivo_backup" value="{{ nombre_archivo }}">
+        <input type="hidden" name="tipo_restauracion" value="{{ tipo_restauracion }}">
+        <input type="hidden" name="confirmar_accion" value="si">
+        
+        <!-- Checkbox de confirmación final -->
+        <div class="mb-6">
+            <label class="flex items-center">
+                <input type="checkbox" name="confirmar_final" required 
+                       class="mr-2 h-5 w-5 text-red-600 border-red-300 rounded focus:ring-red-500">
+                <span class="text-red-700 font-bold">
+                    COMPRENDO LOS RIESGOS Y CONFIRMO QUE QUIERO RESTAURAR EL SISTEMA
+                </span>
+            </label>
+        </div>
+        
+        <!-- Botones -->
+        <div class="flex justify-between">
+            <a href="{% url 'backups:dashboard' %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold">
+                ↩️ Cancelar
+            </a>
+            
+            <button type="submit" 
+                    onclick="return confirm('¿ESTÁS ABSOLUTAMENTE SEGURO? Esta acción NO se puede deshacer.')"
+                    class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold">
+                🚨 EJECUTAR RESTAURACIÓN
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Confirmación extra
+document.querySelector('form').addEventListener('submit', function(e) {
+    const checkbox = document.querySelector('input[name="confirmar_final"]');
+    if (!checkbox.checked) {
+        e.preventDefault();
+        alert('Debes marcar la casilla de confirmación');
+        return false;
+    }
+    
+    const tipo = "{{ tipo_restauracion }}";
+    const mensaje = tipo === 'completa' 
+        ? '🚨 RESTAURACIÓN COMPLETA: Se ELIMINARÁN TODOS los datos actuales y se restaurarán los del backup. ¿CONTINUAR?'
+        : '⚠️ RESTAURACIÓN PARCIAL: Se agregarán datos del backup al sistema actual. ¿CONTINUAR?';
+    
+    if (!confirm(mensaje)) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+{% endblock %}

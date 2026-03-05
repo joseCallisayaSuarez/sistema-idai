@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Final - {{ informe.estudiante }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            line-height: 1.3;
+            color: #2c3e50;
+            margin: 0;
+            padding: 8px;
+            background: white;
+        }
+        
+        /* Encabezado centrado y organizado */
+        .header-container {
+            text-align: center;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .logos-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 3px;
+        }
+        
+        .logo-left, .logo-right {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-left img, .logo-right img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .programa-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1px;
+        }
+        
+        .infandil-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 8px;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .codigo-info {
+            font-size: 8px;
+            color: #7f8c8d;
+            margin: 1px 0;
+        }
+        
+        .ddelp-title {
+            font-size: 9px;
+            font-weight: 600;
+            color: #3498db;
+            margin: 1px 0;
+        }
+        
+        .centro-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 1px 0;
+        }
+
+        /* Título principal del informe */
+        .main-title {
+            text-align: center;
+            margin: 8px 0 5px 0;
+            padding: 6px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: black;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Sección de Calificación de Progreso */
+        .progress-section {
+            margin-bottom: 6px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f8f9ff, #e8f4ff);
+        }
+        
+        .progress-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 8px;
+            font-weight: 700;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            padding: 6px;
+        }
+        
+        .progress-item {
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            background: white;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .progress-value {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .progress-label {
+            font-size: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1px;
+        }
+        
+        .progress-detail {
+            font-size: 7px;
+            color: #7f8c8d;
+        }
+        
+        .alta { color: #27ae60; }
+        .continuar { color: #e67e22; }
+        .excelente { color: #2ecc71; }
+        .bueno { color: #3498db; }
+        .satisfactorio { color: #f39c12; }
+        .proceso { color: #e74c3c; }
+
+        /* Secciones compactas */
+        .data-section {
+            margin-bottom: 6px;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            font-weight: 600;
+            font-size: 10px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #e1e8ed;
+            vertical-align: top;
+        }
+        
+        .label-cell {
+            font-weight: 600;
+            color: #2c3e50;
+            width: 30%;
+            background-color: #f1f8ff;
+        }
+        
+        .value-cell {
+            color: #34495e;
+            width: 70%;
+        }
+        
+        /* Tabla de evaluación compacta */
+        .evaluation-section {
+            margin-bottom: 6px;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .evaluation-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .evaluation-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+            padding: 6px 5px;
+            text-align: left;
+        }
+        
+        .evaluation-table td {
+            padding: 5px;
+            border-bottom: 1px solid #e1e8ed;
+            vertical-align: top;
+        }
+        
+        .evaluation-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .evaluacion-badge {
+            padding: 2px 5px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 8px;
+            text-align: center;
+            display: inline-block;
+            min-width: 55px;
+        }
+        
+        .no-logro { 
+            background: #e74c3c; 
+            color: white;
+        }
+        .en-proceso { 
+            background: #f39c12; 
+            color: white;
+        }
+        .si-logro { 
+            background: #27ae60; 
+            color: white;
+        }
+        
+        /* Firmas compactas */
+        .signature-section {
+            margin: 12px 0 8px 0;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .signature-table td {
+            padding: 10px 8px;
+            text-align: center;
+            vertical-align: top;
+            border-right: 1px solid #e1e8ed;
+        }
+        
+        .signature-table td:last-child {
+            border-right: none;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #2c3e50;
+            width: 120px;
+            margin: 12px auto 3px;
+        }
+        
+        .sello-cell {
+            background: #f8f9fa;
+            border: 1px dashed #3498db !important;
+        }
+        
+        .sello-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 3px;
+        }
+        
+        .footer {
+            margin-top: 8px;
+            padding-top: 6px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 8px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-accent {
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .highlight {
+            background-color: #e8f5e8;
+            font-weight: 600;
+        }
+
+        .criteria-explanation {
+            font-size: 8px;
+            color: #2c3e50;
+            text-align: center;
+            padding: 4px;
+            margin-top: 2px;
+            border-top: 1px dashed #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado centrado y organizado -->
+    <div class="header-container">
+        <!-- Logos en una fila centrada -->
+        <div class="logos-row">
+            <!-- Logo izquierdo -->
+            <div class="logo-left">
+                {% if imagen_idai %}
+                    <img src="{{ imagen_idai }}" alt="IDAI">
+                {% else %}
+                    <div style="width: 50px; height: 50px; background: #f8f9fa; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 7px; text-align: center;">
+                        LOGO 1
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Logo derecho -->
+            <div class="logo-right">
+                {% if imagen_distrito %}
+                    <img src="{{ imagen_distrito }}" alt="Distrito">
+                {% else %}
+                    <div style="width: 50px; height: 50px; background: #f8f9fa; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 7px; text-align: center;">
+                        LOGO 2
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Información del centro -->
+        <div class="header-center">
+            <div class="programa-title">
+                Programa de Atención Educativa a Estudiantes con Dificultades en el Aprendizaje
+                <span class="infandil-badge">Infandil</span>
+            </div>
+            <div class="codigo-info">COD. SIE: 80730696 • COD EDIF.ESC. 80730433 • Fundado: 6 de julio de 1966</div>
+            <div class="ddelp-title">18 DDELP-2</div>
+            <div class="centro-title">Centro de Educación Especial "Adaptación Infantil"</div>
+            <div class="codigo-info">R.A. 1753/2021</div>
+        </div>
+    </div>
+
+    <!-- Título principal del informe -->
+    <div class="main-title">
+        INFORME FINAL / DESARROLLO EDUCATIVO
+    </div>
+
+    <!-- NUEVA SECCIÓN: Calificación de Progreso Automática -->
+    <div class="progress-section">
+        <div class="progress-header">
+            📈 CALIFICACIÓN DE PROGRESO AUTOMÁTICA - EVALUACIÓN DE 24 SESIONES
+        </div>
+        <div class="progress-grid">
+            <!-- Promedio Final -->
+            <div class="progress-item">
+                <div class="progress-value {% if informe.promedio_progreso >= 5.0 %}alta{% else %}continuar{% endif %}">
+                    {{ informe.promedio_progreso|floatformat:2 }}/10
+                </div>
+                <div class="progress-label">PROMEDIO FINAL</div>
+                <div class="progress-detail">
+                    {{ informe.sesiones_evaluadas }} sesiones
+                </div>
+            </div>
+            
+            <!-- Recomendación -->
+            <div class="progress-item">
+                <div class="progress-value {% if informe.promedio_progreso >= 5.0 %}alta{% else %}continuar{% endif %}">
+                    {% if informe.promedio_progreso >= 5.0 %}
+                        DE ALTA
+                    {% else %}
+                        CONTINUAR
+                    {% endif %}
+                </div>
+                <div class="progress-label">RECOMENDACIÓN</div>
+                <div class="progress-detail">
+                    {% if informe.promedio_progreso >= 5.0 %}
+                        Proceso completado
+                    {% else %}
+                        Más sesiones
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Estado Académico -->
+            <div class="progress-item">
+                <div class="progress-value {% if informe.promedio_progreso >= 5.0 %}alta{% else %}continuar{% endif %}">
+                    {% if informe.promedio_progreso >= 5.0 %}
+                        APROBADO
+                    {% else %}
+                        EN PROCESO
+                    {% endif %}
+                </div>
+                <div class="progress-label">ESTADO ACADÉMICO</div>
+                <div class="progress-detail">
+                    Basado en promedio
+                </div>
+            </div>
+            
+            <!-- Nivel de Logro -->
+            <div class="progress-item">
+                <div class="progress-value 
+                    {% if informe.promedio_progreso >= 8.0 %}excelente
+                    {% elif informe.promedio_progreso >= 6.0 %}bueno
+                    {% elif informe.promedio_progreso >= 5.0 %}satisfactorio
+                    {% else %}proceso{% endif %}">
+                    {% if informe.promedio_progreso >= 8.0 %}
+                        EXCELENTE
+                    {% elif informe.promedio_progreso >= 6.0 %}
+                        BUENO
+                    {% elif informe.promedio_progreso >= 5.0 %}
+                        SATISFACTORIO
+                    {% else %}
+                        EN PROCESO
+                    {% endif %}
+                </div>
+                <div class="progress-label">NIVEL DE LOGRO</div>
+                <div class="progress-detail">
+                    {% if informe.promedio_progreso >= 8.0 %}
+                        8.0 - 10.0
+                    {% elif informe.promedio_progreso >= 6.0 %}
+                        6.0 - 7.9
+                    {% elif informe.promedio_progreso >= 5.0 %}
+                        5.0 - 5.9
+                    {% else %}
+                        0.0 - 4.9
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Explicación del criterio -->
+        <div class="criteria-explanation">
+            <strong>📋 CRITERIO DE EVALUACIÓN:</strong> 
+            {% if informe.promedio_progreso >= 5.0 %}
+                <span style="color: #27ae60;">El estudiante ha demostrado progreso satisfactorio ({{ informe.promedio_progreso|floatformat:2 }}/10) y puede ser dado de alta.</span>
+            {% else %}
+                <span style="color: #e67e22;">El estudiante necesita continuar con el programa ({{ informe.promedio_progreso|floatformat:2 }}/10). Se recomiendan 24 sesiones adicionales.</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Datos Institucionales -->
+    <div class="data-section">
+        <div class="section-header">DATOS INSTITUCIONALES</div>
+        <table class="data-table">
+            <tr>
+                <td class="label-cell">Departamento:</td>
+                <td class="value-cell text-accent">{{ informe.departamento }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Distrito Educativo:</td>
+                <td class="value-cell">{{ informe.distrito_educativo }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Nombre C.E.E.:</td>
+                <td class="value-cell text-accent">{{ informe.nombre_cee }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Datos del Estudiante -->
+    <div class="data-section">
+        <div class="section-header">DATOS DEL ESTUDIANTE</div>
+        <table class="data-table">
+            <tr>
+                <td class="label-cell">Nombre completo:</td>
+                <td class="value-cell highlight">{{ informe.estudiante.nombres }} {{ informe.estudiante.apellido_paterno }} {{ informe.estudiante.apellido_materno }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Fecha Nacimiento:</td>
+                <td class="value-cell">{{ informe.fecha_nacimiento|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Edad:</td>
+                <td class="value-cell">{{ informe.edad }} años</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Grado:</td>
+                <td class="value-cell text-accent">{{ informe.grado }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Código RUDE:</td>
+                <td class="value-cell">{{ informe.codigo_rude }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">C.I./Documento:</td>
+                <td class="value-cell">{{ informe.estudiante.documento_identidad }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Datos del Programa -->
+    <div class="data-section">
+        <div class="section-header">DATOS DEL PROGRAMA</div>
+        <table class="data-table">
+            <tr>
+                <td class="label-cell">Gestión:</td>
+                <td class="value-cell text-accent">{{ informe.gestion }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Semestre:</td>
+                <td class="value-cell">{{ informe.semestre_programa }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">R.A. Número:</td>
+                <td class="value-cell">{{ informe.ra_numero }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Diagnóstico Educativo:</td>
+                <td class="value-cell">{{ informe.diagnostico_educativo|default:"No especificado" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Estadísticas de Sesiones -->
+    <div class="data-section">
+        <div class="section-header">ESTADÍSTICAS DE SESIONES</div>
+        <table class="data-table">
+            <tr>
+                <td class="label-cell">Total Sesiones:</td>
+                <td class="value-cell text-accent">{{ informe.total_sesiones }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Sesiones Asistidas:</td>
+                <td class="value-cell">{{ informe.sesiones_asistidas }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Total Faltas:</td>
+                <td class="value-cell">{{ informe.total_faltas }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Total Licencias:</td>
+                <td class="value-cell">{{ informe.total_licencias }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Desarrollo Educativo -->
+    <div class="evaluation-section">
+        <div class="section-header">DESARROLLO EDUCATIVO POR ÁREAS</div>
+        <table class="evaluation-table">
+            <thead>
+                <tr>
+                    <th width="5%">N°</th>
+                    <th width="35%">Área de Desarrollo</th>
+                    <th width="15%">Evaluación</th>
+                    <th width="45%">Recomendaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for desarrollo in desarrollos %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td><strong>{{ desarrollo.area.nombre }}</strong></td>
+                    <td class="text-center">
+                        <span class="evaluacion-badge 
+                            {% if desarrollo.evaluacion == 'NO_LOGRO' %}no-logro
+                            {% elif desarrollo.evaluacion == 'EN_PROCESO' %}en-proceso
+                            {% else %}si-logro{% endif %}">
+                            {{ desarrollo.get_evaluacion_display }}
+                        </span>
+                    </td>
+                    <td>{{ desarrollo.recomendaciones|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center" style="padding: 10px; color: #7f8c8d;">
+                        No hay datos de desarrollo educativo registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Informe de Progresión -->
+    <div class="data-section">
+        <div class="section-header">INFORME DE PROGRESIÓN</div>
+        <table class="data-table">
+            <tr>
+                <td class="label-cell">Otras Señales de Alerta:</td>
+                <td class="value-cell">{{ informe.otras_senales_alerta|default:"No se registraron señales de alerta" }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Estado Final:</td>
+                <td class="value-cell text-accent">{{ informe.estado_final|default:"Por definir" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Firmas y Validaciones -->
+    <div class="signature-section">
+        <div class="section-header">FIRMAS Y VALIDACIONES</div>
+        <table class="signature-table">
+            <tr>
+                <td>
+                    <strong>DOCENTE DE ADAPTACIÓN</strong><br>
+                    <div class="signature-line"></div>
+                    {{ informe.docente.get_full_name|default:informe.docente.username }}<br>
+                    <em>Responsable del Programa</em>
+                </td>
+                <td>
+                    <strong>DIRECTOR/A</strong><br>
+                    <div class="signature-line"></div>
+                    {{ informe.director|default:"_________________________" }}<br>
+                    <em>Director del Centro Educativo</em>
+                </td>
+            </tr>
+            <tr>
+                <td class="sello-cell" colspan="2">
+                    <div class="sello-text">SELLO DIRECCIÓN C.E.E.</div>
+                    <em>Espacio reservado para el sello de dirección</em>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <div style="margin-bottom: 3px;">
+            <strong>Lugar y Fecha:</strong> {{ informe.lugar_fecha }}
+        </div>
+        <div>
+            <em>Documento generado el {{ informe.fecha_actualizacion|date:"d/m/Y H:i" }}</em>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Bienvenido {{ request.user.username }}</h1>
+<p>Este es tu panel de escritorio.</p>
+<form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <a href="{% url 'logout' %}">Cerrar sesión</a>
+
+{% endblock %}

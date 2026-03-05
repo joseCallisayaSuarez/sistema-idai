@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Panel de Usuario - IDAI{% endblock %}
+
+{% block content %}
+<h1>Bienvenido, {{ request.user.username }}</h1>
+<p>Has iniciado sesión como <strong>usuario común</strong>.</p>
+<p>Aquí puedes acceder solo a las funciones habilitadas para ti.</p>
+
+<style>
+    h1 {
+        color: #0d1b2a;
+        font-size: 26px;
+        margin-bottom: 15px;
+    }
+    p {
+        font-size: 16px;
+        color: #1a2a4f;
+        background: rgba(255,255,255,0.8);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Estadísticas - {{ periodo_actual.año }}-S{{ periodo_actual.semestre }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 3px;
+        }
+        
+        .periodo {
+            font-size: 11px;
+            font-weight: bold;
+            color: #3498db;
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #e1e8ed;
+            border-radius: 5px;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .stats-grid {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            display: inline-block;
+            width: 24%;
+            margin-right: 1%;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        
+        .stat-card:last-child {
+            margin-right: 0;
+        }
+        
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            font-size: 9px;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+            margin-top: 8px;
+            page-break-inside: auto;
+        }
+        
+        .table th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            padding: 6px 4px;
+            text-align: left;
+            border: 1px solid #2980b9;
+        }
+        
+        .table td {
+            padding: 5px 4px;
+            border: 1px solid #e1e8ed;
+            vertical-align: middle;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 8px;
+            margin: 3px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+        
+        .distribution-grid {
+            display: block;
+            width: 100%;
+        }
+        
+        .distribution-card {
+            display: inline-block;
+            width: 32%;
+            margin-right: 1%;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        
+        .distribution-card:last-child {
+            margin-right: 0;
+        }
+        
+        .distribution-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .distribution-label {
+            font-size: 9px;
+            color: #7f8c8d;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-small {
+            font-size: 7px;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 8px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo-text {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo/Encabezado -->
+    <div class="logo">
+        <div class="logo-text">CENTRO DE EDUCACIÓN ESPECIAL "ADAPTACIÓN INFANTIL"</div>
+    </div>
+
+    <!-- Encabezado -->
+    <div class="header">
+        <div class="title">REPORTE DE ESTADÍSTICAS GENERALES</div>
+        <div class="subtitle">Programa de Atención Educativa a Estudiantes con Dificultades en el Aprendizaje</div>
+        <div class="periodo">
+            PERIODO: {{ periodo_actual.año }} - {{ periodo_actual.semestre|yesno:"SEGUNDO SEMESTRE,PRIMER SEMESTRE" }}
+        </div>
+        <div class="subtitle">Documento generado el: {% now "d/m/Y H:i" %}</div>
+    </div>
+
+    <!-- Resumen General -->
+    <div class="section">
+        <div class="section-title">📊 RESUMEN GENERAL DEL SISTEMA</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ estadistica_global.total_estudiantes }}</div>
+                <div class="stat-label">TOTAL ESTUDIANTES</div>
+                <div class="text-small">
+                    ♂️ {{ estadistica_global.estudiantes_masculinos }} | ♀️ {{ estadistica_global.estudiantes_femeninos }}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ estadistica_global.total_agendas_activas }}</div>
+                <div class="stat-label">AGENDAS ACTIVAS</div>
+                <div class="text-small">
+                    Progreso: {{ estadistica_global.promedio_progreso|floatformat:1 }}/24
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ estadistica_global.tasa_asistencia_global|floatformat:1 }}%</div>
+                <div class="stat-label">ASISTENCIA GLOBAL</div>
+                <div class="text-small">
+                    {{ estadistica_global.total_sesiones_completadas }} sesiones
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ estadistica_global.estudiantes_graduados }}</div>
+                <div class="stat-label">DADOS DE ALTA</div>
+                <div class="text-small">
+                    24/24 sesiones completadas
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución por Nivel -->
+    <div class="section">
+        <div class="section-title">🎯 DISTRIBUCIÓN POR NIVEL EDUCATIVO</div>
+        <div class="distribution-grid">
+            <div class="distribution-card">
+                <div class="distribution-label">INFANCIA (IFC)</div>
+                <div class="distribution-value" style="color: #3498db;">{{ estadistica_global.estudiantes_ifc }}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {% widthratio estadistica_global.estudiantes_ifc estadistica_global.total_estudiantes 100 %}%; background: #3498db;"></div>
+                </div>
+                <div class="text-small">
+                    {% widthratio estadistica_global.estudiantes_ifc estadistica_global.total_estudiantes 100 %}% del total
+                </div>
+            </div>
+            
+            <div class="distribution-card">
+                <div class="distribution-label">PRE-BÁSICA (PCV)</div>
+                <div class="distribution-value" style="color: #2ecc71;">{{ estadistica_global.estudiantes_pcv }}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {% widthratio estadistica_global.estudiantes_pcv estadistica_global.total_estudiantes 100 %}%; background: #2ecc71;"></div>
+                </div>
+                <div class="text-small">
+                    {% widthratio estadistica_global.estudiantes_pcv estadistica_global.total_estudiantes 100 %}% del total
+                </div>
+            </div>
+            
+            <div class="distribution-card">
+                <div class="distribution-label">BÁSICA (SCP)</div>
+                <div class="distribution-value" style="color: #9b59b6;">{{ estadistica_global.estudiantes_scp }}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {% widthratio estadistica_global.estudiantes_scp estadistica_global.total_estudiantes 100 %}%; background: #9b59b6;"></div>
+                </div>
+                <div class="text-small">
+                    {% widthratio estadistica_global.estudiantes_scp estadistica_global.total_estudiantes 100 %}% del total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Programa -->
+    <div class="section">
+        <div class="section-title">📈 ESTADÍSTICAS POR PROGRAMA DE APOYO</div>
+        
+        {% if estadisticas_programas %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="25%">PROGRAMA DE APOYO</th>
+                    <th width="12%">ESTUDIANTES</th>
+                    <th width="12%">% DEL TOTAL</th>
+                    <th width="15%">SESIONES TOTALES</th>
+                    <th width="12%">COMPLETADAS</th>
+                    <th width="12%">TASA COMPLETACIÓN</th>
+                    <th width="12%">PROMEDIO x EST.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for programa in estadisticas_programas %}
+                <tr>
+                    <td><strong>{{ programa.programa|title }}</strong></td>
+                    <td class="text-center">{{ programa.total_estudiantes }}</td>
+                    <td class="text-center">
+                        {% if estadistica_global.total_estudiantes > 0 %}
+                            {% widthratio programa.total_estudiantes estadistica_global.total_estudiantes 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ programa.sesiones_totales }}</td>
+                    <td class="text-center">{{ programa.sesiones_completadas }}</td>
+                    <td class="text-center">{{ programa.tasa_completacion|floatformat:1 }}%</td>
+                    <td class="text-center">{{ programa.promedio_sesiones_estudiante|floatformat:1 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center" style="padding: 20px; color: #7f8c8d;">
+            No hay datos de programas disponibles para este período.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Resumen Ejecutivo -->
+    <div class="section">
+        <div class="section-title">📋 RESUMEN EJECUTIVO</div>
+        <div style="font-size: 9px; line-height: 1.4;">
+            <p><strong>Período analizado:</strong> {{ periodo_actual.año }} - {{ periodo_actual.semestre|yesno:"Segundo Semestre,Primer Semestre" }}</p>
+            <p><strong>Total de estudiantes en el sistema:</strong> {{ total_estudiantes }} registrados</p>
+            <p><strong>Eficiencia del programa:</strong> {{ estadistica_global.tasa_asistencia_global|floatformat:1 }}% de asistencia global</p>
+            <p><strong>Progreso promedio:</strong> {{ estadistica_global.promedio_progreso|floatformat:1 }} sesiones completadas por agenda activa</p>
+            <p><strong>Estudiantes dados de alta:</strong> {{ estadistica_global.estudiantes_graduados }} completaron las 24 sesiones</p>
+            <p><strong>Última actualización:</strong> {{ estadistica_global.fecha_calculo|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <strong>Centro de Educación Especial "Adaptación Infantil"</strong><br/>
+        COD. SIE: 80730696 • 18 DDELP-2 • R.A. 1753/2021<br/>
+        Sistema de Gestión Educativa - Reporte Automático
+    </div>
+</body>
+</html>

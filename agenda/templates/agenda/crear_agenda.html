@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block title %}Crear Agenda - {{ estudiante }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
+    <h2 class="text-2xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-2">
+        📅 Crear Agenda para {{ estudiante }}
+    </h2>
+
+    <!-- Información del Estudiante -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+        <h3 class="font-semibold text-gray-800 mb-2">Información del Estudiante</h3>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+            <div><strong>Nombre:</strong> {{ estudiante.nombres }} {{ estudiante.apellido_paterno }}</div>
+            <div><strong>CI:</strong> {{ estudiante.documento_identidad }}</div>
+            <div><strong>Grado:</strong> {{ estudiante.grado }}</div>
+            <div><strong>Nivel:</strong> {{ estudiante.get_nivel_display }}</div>
+        </div>
+    </div>
+
+    <form method="POST" class="space-y-6" id="agendaForm">
+        {% csrf_token %}
+        
+        <!-- Mostrar errores del formulario -->
+        {% if form_agenda.errors %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 class="font-semibold text-red-800 mb-2">❌ Errores en el formulario:</h4>
+            <ul class="text-sm text-red-700 list-disc list-inside">
+                {% for field, errors in form_agenda.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Día de la Semana - ACTUALIZADO para usar form_agenda -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Día de la Semana *
+                </label>
+                {{ form_agenda.dia_semana }}
+                <p class="text-xs text-gray-500 mt-1">Seleccione el día que vendrá el estudiante</p>
+            </div>
+
+            <!-- Horario - ACTUALIZADO para usar form_agenda -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Hora de Inicio *
+                    </label>
+                    {{ form_agenda.hora_inicio }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Hora de Fin *
+                    </label>
+                    {{ form_agenda.hora_fin }}
+                </div>
+            </div>
+
+            <!-- Fecha de Inicio - ACTUALIZADO para usar form_agenda -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Fecha de Inicio *
+                </label>
+                {{ form_agenda.fecha_inicio }}
+                <p class="text-xs text-gray-500 mt-1">Primer día de sesión</p>
+            </div>
+        </div>
+
+        <!-- Resumen de lo que se creará -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 class="font-semibold text-yellow-800 mb-2">📋 Se crearán automáticamente:</h4>
+            <ul class="text-sm text-yellow-700 list-disc list-inside space-y-1">
+                <li><strong>24 sesiones</strong> los días <span id="dia-seleccionado">---</span></li>
+                <li>Horario: <span id="hora-inicio">--:--</span> a <span id="hora-fin">--:--</span></li>
+                <li>Iniciando el: <span id="fecha-inicio">---</span></li>
+            </ul>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4 mt-6 pt-6 border-t border-gray-200">
+            <a href="{% url 'agenda:buscar_estudiante' %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-2 rounded-lg shadow-md transition">
+                💾 Crear 24 Sesiones
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- MODAL DE ÉXITO - ESTILO MODERNO -->
+{% if agenda_creada %}
+<div id="successModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: block;">
+{% else %}
+<div id="successModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+{% endif %}
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Fondo oscuro -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        
+        <!-- Contenido del modal -->
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full scale-100 opacity-100">
+            <!-- Encabezado del modal -->
+            <div class="bg-gradient-to-r from-green-400 to-green-600 px-6 py-8 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white bg-opacity-20 mb-4">
+                    <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">¡Agenda Creada Exitosamente!</h3>
+                <p class="text-green-100">La agenda se ha creado correctamente</p>
+            </div>
+            
+            <!-- Cuerpo del modal -->
+            <div class="bg-white px-6 py-8">
+                <div class="mb-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Estudiante</h4>
+                            <p class="text-gray-600">{{ estudiante.nombres }} {{ estudiante.apellido_paterno }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-3 rounded-full mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">24 Sesiones Generadas</h4>
+                            <p class="text-gray-600">Listas para programar</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="bg-purple-100 p-3 rounded-full mr-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Calendario Actualizado</h4>
+                            <p class="text-gray-600">Puedes ver las sesiones en el calendario</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progreso simulado -->
+                <div class="mb-8">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Progreso de creación</span>
+                        <span class="text-sm font-medium text-green-600">100%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-600 h-2.5 rounded-full w-full animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pie del modal -->
+            <div class="bg-gray-50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="redirectToCalendar()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-base font-medium text-white hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-300 transform hover:scale-105">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                    </svg>
+                    Ver Calendario
+                </button>
+                <button type="button" onclick="closeModalAndReset()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Crear Otra Agenda
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar resumen en tiempo real
+    function actualizarResumen() {
+        const diaSelect = document.getElementById('id_dia_semana');
+        const horaInicio = document.getElementById('id_hora_inicio');
+        const horaFin = document.getElementById('id_hora_fin');
+        const fechaInicio = document.getElementById('id_fecha_inicio');
+        
+        if (diaSelect && diaSelect.selectedIndex > 0) {
+            document.getElementById('dia-seleccionado').textContent = 
+                diaSelect.options[diaSelect.selectedIndex].text;
+        } else {
+            document.getElementById('dia-seleccionado').textContent = '---';
+        }
+        
+        document.getElementById('hora-inicio').textContent = horaInicio.value || '--:--';
+        document.getElementById('hora-fin').textContent = horaFin.value || '--:--';
+        document.getElementById('fecha-inicio').textContent = fechaInicio.value || '---';
+    }
+    
+    // Agregar eventos
+    document.querySelectorAll('select, input').forEach(element => {
+        element.addEventListener('change', actualizarResumen);
+        element.addEventListener('input', actualizarResumen);
+    });
+    
+    // Inicializar resumen
+    actualizarResumen();
+});
+
+// FUNCIONES PARA EL MODAL
+function showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'block';
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    document.body.classList.remove('overflow-hidden');
+}
+
+function redirectToCalendar() {
+    window.location.href = "{% url 'agenda:calendario_general' %}";
+}
+
+function closeModalAndReset() {
+    closeSuccessModal();
+    // Limpiar el formulario
+    document.getElementById('agendaForm').reset();
+    // Actualizar el resumen
+    document.getElementById('dia-seleccionado').textContent = '---';
+    document.getElementById('hora-inicio').textContent = '--:--';
+    document.getElementById('hora-fin').textContent = '--:--';
+    document.getElementById('fecha-inicio').textContent = '---';
+}
+</script>
+
+<!-- Estilos adicionales para animaciones -->
+<style>
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Estilos para los campos del formulario */
+input[type="time"], input[type="date"], select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+input[type="time"]:focus, input[type="date"]:focus, select:focus {
+    outline: none;
+    ring-width: 2px;
+    ring-color: #3b82f6;
+    border-color: #3b82f6;
+}
+</style>
+{% endblock %}

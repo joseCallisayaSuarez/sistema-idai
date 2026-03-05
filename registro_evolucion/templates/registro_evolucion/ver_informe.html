@@ -1,0 +1,648 @@
+{% extends 'base.html' %}
+
+{% block title %}Informe Final - {{ informe.estudiante }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">📋 Informe Final</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'registro_evolucion:generar_pdf' informe.pk %}" 
+               target="_blank"
+               class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                📄 Generar PDF
+            </a>
+            <a href="{% url 'registro_evolucion:editar_informe' informe.pk %}" 
+               class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                ✏️ Editar
+            </a>
+            <a href="{% url 'registro_evolucion:lista_informes' %}" 
+               class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                ← Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Informe -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <!-- Encabezado Institucional -->
+        <div class="text-center mb-8 border-b pb-4">
+            <h1 class="text-2xl font-bold text-gray-900">CENTRO DE EDUCACION ESPECIAL "ADAPTACIÓN INFANTIL"</h1>
+            <p class="text-gray-600">Programa de Atención Educativa a Estudiantes con Dificultades en el Aprendizaje</p>
+            <p class="text-sm text-gray-500">COD. SIE: 80730696 - COD EDIF ESC. 80730433 - Fundador: 6 de julio de 1966 - R.A.1753/2021</p>
+        </div>
+
+        <!-- CALIFICACIÓN DE PROGRESO AUTOMÁTICA - NUEVA SECCIÓN -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-800">📈 Calificación de Progreso Automática</h2>
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    🎯 Calculado de 24 Sesiones
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
+                <!-- Promedio de Progreso -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold {% if informe.promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                        {{ informe.promedio_progreso|floatformat:2 }}/10
+                    </div>
+                    <div class="text-sm font-medium text-gray-700 mt-1">Promedio Final</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {{ informe.sesiones_evaluadas }} sesiones evaluadas
+                    </div>
+                </div>
+                
+                <!-- Recomendación -->
+                <div class="text-center">
+                    <div class="text-2xl font-bold {% if informe.promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                        {% if informe.promedio_progreso >= 5.0 %}
+                            🎉 DE ALTA
+                        {% else %}
+                            🔄 CONTINUAR
+                        {% endif %}
+                    </div>
+                    <div class="text-sm font-medium text-gray-700 mt-1">Recomendación</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {% if informe.promedio_progreso >= 5.0 %}
+                            Proceso completado
+                        {% else %}
+                            Requiere más sesiones
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Estado del Estudiante -->
+                <div class="text-center">
+                    <div class="text-2xl font-bold {% if informe.promedio_progreso >= 5.0 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                        {% if informe.promedio_progreso >= 5.0 %}
+                            ✅ APROBADO
+                        {% else %}
+                            📚 EN PROCESO
+                        {% endif %}
+                    </div>
+                    <div class="text-sm font-medium text-gray-700 mt-1">Estado Académico</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        Basado en el promedio
+                    </div>
+                </div>
+                
+                <!-- Nivel de Logro -->
+                <div class="text-center">
+                    <div class="text-xl font-bold text-blue-600">
+                        {% if informe.promedio_progreso >= 5.0 %}
+                            🎓 LOGRO ALCANZADO
+                        {% else %}
+                            📖 EN DESARROLLO
+                        {% endif %}
+                    </div>
+                    <div class="text-sm font-medium text-gray-700 mt-1">Nivel de Logro</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {% if informe.promedio_progreso >= 8.0 %}
+                            Excelente
+                        {% elif informe.promedio_progreso >= 6.0 %}
+                            Bueno
+                        {% elif informe.promedio_progreso >= 5.0 %}
+                            Satisfactorio
+                        {% else %}
+                            En proceso
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Explicación del Cálculo -->
+            <div class="mt-4 pt-4 border-t border-blue-200">
+                <div class="text-sm text-blue-700">
+                    <strong>📋 Criterio de Evaluación:</strong> 
+                    {% if informe.promedio_progreso >= 5.0 %}
+                        <span class="text-green-600">El estudiante ha demostrado un progreso satisfactorio ({{ informe.promedio_progreso|floatformat:2 }}/10) y puede ser dado de alta del programa. Ha completado exitosamente las 24 sesiones.</span>
+                    {% else %}
+                        <span class="text-yellow-600">El estudiante necesita continuar con el programa ({{ informe.promedio_progreso|floatformat:2 }}/10). Se recomienda retomar 24 sesiones más para fortalecer el aprendizaje.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos del Informe -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">📊 Datos del Estudiante</h2>
+                <div class="space-y-2">
+                    <p><span class="font-medium">Nombre:</span> {{ informe.estudiante.nombres }} {{ informe.estudiante.apellido_paterno }} {{ informe.estudiante.apellido_materno }}</p>
+                    <p><span class="font-medium">RUDE:</span> {{ informe.codigo_rude }}</p>
+                    <p><span class="font-medium">Fecha Nacimiento:</span> {{ informe.fecha_nacimiento|date:"d/m/Y" }}</p>
+                    <p><span class="font-medium">Edad:</span> {{ informe.edad }} años</p>
+                    <p><span class="font-medium">Grado:</span> {{ informe.grado }}</p>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">📋 Datos del Programa</h2>
+                <div class="space-y-2">
+                    <p><span class="font-medium">Gestión:</span> {{ informe.gestion }}</p>
+                    <p><span class="font-medium">Semestre:</span> {{ informe.semestre_programa }}</p>
+                    <p><span class="font-medium">Diagnóstico:</span> {{ informe.diagnostico_educativo }}</p>
+                    <p><span class="font-medium">Estado:</span> 
+                        <span class="{% if informe.estado == 'BORRADOR' %}bg-yellow-100 text-yellow-800{% elif informe.estado == 'COMPLETADO' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %} px-2 py-1 rounded-full text-xs font-medium">
+                            {{ informe.get_estado_display }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desarrollo Educativo -->
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">📈 ACTIVIDADES DE INTERVENCIÓN PEDAGÓGICA</h2>
+            
+            <!-- Encabezado de la tabla -->
+            <div class="grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                <div class="col-span-6">
+                    <label class="block text-sm font-medium text-gray-700">ÁREA DE DESARROLLO</label>
+                </div>
+                <div class="col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 text-center">DESARROLLO</label>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">RECOMENDACIONES</label>
+                </div>
+            </div>
+
+            <!-- Opciones de desarrollo -->
+            <div class="grid grid-cols-12 gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
+                <div class="col-span-6"></div>
+                <div class="col-span-4">
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="text-sm font-medium text-red-600">No Logró</div>
+                        <div class="text-sm font-medium text-yellow-600">En Proceso</div>
+                        <div class="text-sm font-medium text-green-600">Si Logró</div>
+                    </div>
+                </div>
+                <div class="col-span-2"></div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Área 1: Desarrollo Socioemocional Afectivo -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo Socioemocional Afectivo
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Motivación, empatía, resiliencia, autoestima, identidad, adaptación, autorregulación emocional
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.1 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.1.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.1.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.1.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.1 %}
+                                {{ desarrollos_dict.1.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 2: Desarrollo de las Funciones Básicas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de las Funciones Básicas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Espacialidad, temporalidad, lateralidad, esquema corporal, equilibrio, coordinación y velocidad de movimientos, gimnasia cerebral, motricidad fina y gruesa
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.2 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.2.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.2.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.2.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.2 %}
+                                {{ desarrollos_dict.2.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 3: Desarrollo de Funciones Cognitivas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Funciones Cognitivas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Estimulación, percepción, atención, memoria, comprensión, neuro estructuración, velocidad de procesamiento de la información
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.3 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.3.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.3.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.3.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.3 %}
+                                {{ desarrollos_dict.3.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 4: Desarrollo de Funciones Ejecutivas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Funciones Ejecutivas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Organización, rutinas, hábitos, adquisición de aprendizajes de manera autónoma, responsabilidad, toma de decisiones con responsabilidad y autodisciplina
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.4 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.4.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.4.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.4.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.4 %}
+                                {{ desarrollos_dict.4.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 5: Desarrollo de Habilidades Comunicativas y Académicas -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Habilidades Comunicativas y Académicas
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Interacción, análisis y relación de ideas; construcción de secuencias; generalización, deducción y síntesis; interpretación y creatividad
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.5 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.5.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.5.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.5.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.5 %}
+                                {{ desarrollos_dict.5.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 6: Desarrollo de la Lectura y Escritura -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de la Lectura y Escritura
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            Intensión comunicativa, expresión (verbal, gestual y escrita), prelectura, lectura veloz y comprensiva, copias de texto, dictado de textos, legibilidad y velocidad
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.6 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.6.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.6.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.6.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.6 %}
+                                {{ desarrollos_dict.6.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área 7: Desarrollo de Razonamiento Lógico y Cálculo Matemático -->
+                <div class="grid grid-cols-12 gap-4 items-start p-4 border border-gray-200 rounded-lg">
+                    <div class="col-span-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Desarrollo de Razonamiento Lógico y Cálculo Matemático
+                        </label>
+                        <p class="text-xs text-gray-500">
+                            noción de cantidad, conteo, des conteo, números ordinal, cardinal, composición y descomposición de UDCM, estimaciones de cantidades con aumentar, quitar, duplicar, triplicar, cuadriplicar, distribuir, cálculo mental
+                        </p>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            {% if desarrollos_dict.7 %}
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.7.evaluacion == 'NO_LOGRO' %}checked{% endif %} disabled class="text-red-600">
+                                <span class="text-xs text-gray-600 mt-1">No Logró</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.7.evaluacion == 'EN_PROCESO' %}checked{% endif %} disabled class="text-yellow-600">
+                                <span class="text-xs text-gray-600 mt-1">En Proceso</span>
+                            </label>
+                            <label class="flex flex-col items-center cursor-pointer">
+                                <input type="radio" {% if desarrollos_dict.7.evaluacion == 'SI_LOGRO' %}checked{% endif %} disabled class="text-green-600">
+                                <span class="text-xs text-gray-600 mt-1">Si Logró</span>
+                            </label>
+                            {% else %}
+                            <div class="col-span-3 text-center text-red-500 text-sm">
+                                ❌ No guardado
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border min-h-[80px]">
+                            {% if desarrollos_dict.7 %}
+                                {{ desarrollos_dict.7.recomendaciones|default:"Sin recomendaciones" }}
+                            {% else %}
+                                ❌ No guardado
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informe de Progresión -->
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">📝 INFORME DE PROGRESIÓN</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">{{ informe.total_sesiones }}</div>
+                    <div class="text-sm text-gray-600">Total Sesiones</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-600">{{ informe.total_licencias }}</div>
+                    <div class="text-sm text-gray-600">Licencias</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-red-600">{{ informe.total_faltas }}</div>
+                    <div class="text-sm text-gray-600">Faltas</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">{{ informe.sesiones_asistidas }}</div>
+                    <div class="text-sm text-gray-600">Asistidas</div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-2">Otras Señales de Alerta</h3>
+                    <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">{{ informe.otras_senales_alerta|default:"No se registraron señales de alerta" }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-2">Estado Final</h3>
+                    <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">{{ informe.estado_final|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos de Registro -->
+        <div class="border-t pt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium text-gray-700">Docente D.A.</h3>
+                    <p class="text-gray-900">{{ informe.docente.get_full_name|default:informe.docente.username }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">Director</h3>
+                    <p class="text-gray-900">{{ informe.director|default:"-" }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">Lugar y Fecha</h3>
+                    <p class="text-gray-900">{{ informe.lugar_fecha }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">Sello Dirección</h3>
+                    <p class="text-gray-900">{{ informe.sello_direccion|yesno:"Sí,No" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN PARA VER_INFORME.HTML -->
+{% if exito %}
+<div id="modalExito" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+    <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">✅ ¡Informe Generado Exitosamente!</h3>
+            
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    El informe final para <strong>{{ informe.estudiante.nombres }} {{ informe.estudiante.apellido_paterno }}</strong> 
+                    ha sido creado correctamente.
+                </p>
+            </div>
+            
+            <div class="items-center px-4 py-3">
+                <button onclick="cerrarModal()" 
+                        class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cerrarModal() {
+    document.getElementById('modalExito').style.display = 'none';
+    // Remover el parámetro de éxito de la URL sin recargar
+    if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('exito');
+        window.history.replaceState({}, '', url);
+    }
+}
+
+// Cerrar modal con ESC o clic fuera
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModal();
+});
+
+document.getElementById('modalExito').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+</script>
+{% endif %}
+
+<style>
+/* Estilos para los radio buttons deshabilitados */
+input[type="radio"]:disabled {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+/* Mejora la apariencia de las áreas */
+.border-gray-200 {
+    border-color: #e5e7eb;
+}
+
+.min-h-\[80px\] {
+    min-height: 80px;
+}
+
+/* Estilos para los radio buttons seleccionados */
+input[type="radio"]:checked {
+    background-color: currentColor;
+    border-color: currentColor;
+}
+
+input[type="radio"]:checked::before {
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: white;
+    margin: 0.25rem;
+}
+
+/* Estilos para el modal */
+.fixed {
+    position: fixed;
+}
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.bg-opacity-50 {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.z-50 {
+    z-index: 50;
+}
+</style>
+{% endblock %}

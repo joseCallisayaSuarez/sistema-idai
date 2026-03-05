@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Estudiante{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-10 mt-8">
+  <h2 class="text-2xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-2">
+    📝 Registrar Nuevo Estudiante
+  </h2>
+
+  <!-- Mostrar errores generales -->
+  {% if estudiante_form.errors or tutor_form.errors %}
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <strong>Error:</strong> Por favor corrige los errores en el formulario.
+  </div>
+  {% endif %}
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Datos del Estudiante -->
+    <div>
+      <h3 class="text-lg font-semibold text-blue-600 mb-3">Datos del Estudiante</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in estudiante_form %}
+          {% if field.name != 'resultados_evaluacion' and field.name != 'evaluacion_requerida' %}
+          <div class="mb-4 {% if field.name == 'programa_apoyo' %}md:col-span-2{% endif %}">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Sección de Evaluación (manejo especial) -->
+        <div class="mb-4 md:col-span-2">
+          <label class="block text-gray-700 text-sm font-bold mb-2">
+            Resultados de Evaluación:
+          </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {% for checkbox in estudiante_form.resultados_evaluacion %}
+            <div class="flex items-center">
+              {{ checkbox.tag }}
+              <label for="{{ checkbox.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                {{ checkbox.choice_label }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          {% if estudiante_form.resultados_evaluacion.help_text %}
+             <p class="text-xs text-gray-500 mt-2">{{ estudiante_form.resultados_evaluacion.help_text }}</p>
+          {% endif %}
+          {% if estudiante_form.resultados_evaluacion.errors %}
+            <div class="text-red-500 text-xs mt-1">{{ estudiante_form.resultados_evaluacion.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Campo condicional para evaluación multidisciplinaria -->
+        <div class="mb-4 md:col-span-2" id="evaluacion-requerida-container" style="display: none;">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ estudiante_form.evaluacion_requerida.id_for_label }}">
+            {{ estudiante_form.evaluacion_requerida.label }}
+          </label>
+          {{ estudiante_form.evaluacion_requerida }}
+          {% if estudiante_form.evaluacion_requerida.help_text %}
+            <p class="text-xs text-gray-500 mt-1">{{ estudiante_form.evaluacion_requerida.help_text }}</p>
+          {% endif %}
+          {% if estudiante_form.evaluacion_requerida.errors %}
+            <div class="text-red-500 text-xs mt-1">{{ estudiante_form.evaluacion_requerida.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-t-2 border-gray-200">
+
+    <!-- Datos del Padre/Tutor -->
+    <div>
+      <h3 class="text-lg font-semibold text-blue-600 mb-3">Datos del Padre / Tutor</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in tutor_form %}
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-8">
+      <button type="submit" 
+              class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-2 rounded-lg shadow-md transition duration-300">
+        💾 Registrar Estudiante
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Modal de éxito -->
+<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg p-8 max-w-md mx-4">
+    <div class="text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">¡Éxito!</h3>
+      <p class="text-gray-600 mb-6">Estudiante registrado correctamente</p>
+      <div class="flex justify-center space-x-4">
+        <a href="{% url 'lista_estudiantes' %}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-300">
+          Ver Lista de Estudiantes
+        </a>
+        <button onclick="cerrarModal()" 
+                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg transition duration-300">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script para convertir texto a mayúsculas automáticamente -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Convertir a mayúsculas
+  document.querySelectorAll('input[type="text"], textarea').forEach(campo => {
+    campo.addEventListener('input', () => {
+      campo.value = campo.value.toUpperCase();
+    });
+  });
+
+  // Agregar clases de Tailwind a todos los campos
+  document.querySelectorAll('input, select, textarea').forEach(campo => {
+    if (campo.type !== 'checkbox') {
+      campo.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+    }
+  });
+
+  // Estilos específicos para checkboxes
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.classList.add('mr-2', 'focus:ring-blue-500', 'h-4', 'w-4', 'text-blue-600', 'border-gray-300', 'rounded');
+  });
+
+  // JavaScript para campo condicional de evaluación multidisciplinaria
+  const multidisciplinariaCheckbox = document.querySelector('input[value="multidisciplinaria"]');
+  const evaluacionRequeridaContainer = document.getElementById('evaluacion-requerida-container');
+
+  function toggleEvaluacionRequerida() {
+    if (multidisciplinariaCheckbox && evaluacionRequeridaContainer) {
+      if (multidisciplinariaCheckbox.checked) {
+        evaluacionRequeridaContainer.style.display = 'block';
+      } else {
+        evaluacionRequeridaContainer.style.display = 'none';
+        // Limpiar el campo si no está seleccionado
+        const evaluacionInput = document.getElementById('id_evaluacion_requerida');
+        if (evaluacionInput) {
+          evaluacionInput.value = '';
+        }
+      }
+    }
+  }
+
+  // Inicializar y escuchar cambios
+  if (multidisciplinariaCheckbox && evaluacionRequeridaContainer) {
+    toggleEvaluacionRequerida(); // Estado inicial
+    multidisciplinariaCheckbox.addEventListener('change', toggleEvaluacionRequerida);
+  }
+
+  // Verificar si debe mostrarse el modal después del registro
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('registro') === 'exitoso') {
+    mostrarModal();
+  }
+});
+
+const regexSoloLetras = /[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g;
+const regexSoloNumeros = /[^0-9]/g;
+
+document.querySelectorAll('input[type="text"]').forEach(campo => {
+  const nombre = campo.name.toLowerCase();
+  if (
+    nombre.includes('paterno') ||
+    nombre.includes('materno') ||
+    nombre.includes('nombres') ||
+    nombre.includes('parentesco') ||
+    nombre.includes('pais')||
+    nombre.includes('departamento')
+  ) {
+    campo.addEventListener('input', () => {
+      campo.value = campo.value.replace(regexSoloLetras, '');
+    });
+  }
+  if (
+    nombre.includes('telefono') ||
+    nombre.includes('celular')
+  ) {
+    campo.addEventListener('input', () => {
+      campo.value = campo.value.replace(regexSoloNumeros, '');
+    });
+  }
+});
+
+// Funciones para el modal
+function mostrarModal() {
+  document.getElementById('successModal').classList.remove('hidden');
+}
+
+function cerrarModal() {
+  document.getElementById('successModal').classList.add('hidden');
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('successModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    cerrarModal();
+  }
+});
+
+// Escuchar el envío del formulario para mostrar el modal
+document.querySelector('form').addEventListener('submit', function(e) {
+  // Esta función se ejecutará antes de enviar el formulario
+  // El modal se mostrará después del registro exitoso mediante el parámetro URL
+});
+</script>
+{% endblock %}

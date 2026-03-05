@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Editar Estudiante{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-10 mt-8">
+  <h2 class="text-2xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-2">
+    ✏️ Editar Estudiante: {{ estudiante.nombres }} {{ estudiante.apellido_paterno }}
+  </h2>
+
+  {% if estudiante_form.errors or tutor_form.errors %}
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <strong>Error:</strong> Por favor corrige los errores en el formulario.
+  </div>
+  {% endif %}
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Datos del Estudiante -->
+    <div>
+      <h3 class="text-lg font-semibold text-blue-600 mb-3">Datos del Estudiante</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in estudiante_form %}
+          <div class="mb-4 {% if field.name == 'resultados_evaluacion' or field.name == 'programa_apoyo' %}md:col-span-2{% endif %}">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <hr class="border-t-2 border-gray-200">
+
+    <!-- Datos del Padre/Tutor -->
+    <div>
+      <h3 class="text-lg font-semibold text-blue-600 mb-3">Datos del Padre / Tutor</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in tutor_form %}
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-8 space-x-4">
+      <a href="{% url 'lista_estudiantes' %}" 
+         class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition duration-300">
+        Cancelar
+      </a>
+      <button type="submit" 
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2 rounded-lg shadow-md transition duration-300">
+        💾 Guardar Cambios
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[type="text"], textarea').forEach(campo => {
+    campo.addEventListener('input', () => {
+      campo.value = campo.value.toUpperCase();
+    });
+  });
+
+  document.querySelectorAll('input, select, textarea').forEach(campo => {
+    if (campo.type !== 'checkbox') {
+      campo.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+    }
+  });
+
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.classList.add('mr-2', 'focus:ring-blue-500', 'h-4', 'w-4', 'text-blue-600', 'border-gray-300', 'rounded');
+  });
+});
+  const regexSoloLetras = /[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g;
+
+  // 🔢 Solo números en campos de teléfono/celular
+  const regexSoloNumeros = /[^0-9]/g;
+
+  document.querySelectorAll('input[type="text"], input[type="tel"]').forEach(campo => {
+    const nombre = campo.name.toLowerCase();
+
+    // Campos de solo letras
+    if (
+      nombre.includes('paterno') ||
+      nombre.includes('materno') ||
+      nombre.includes('nombres') ||
+      nombre.includes('parentesco')
+    ) {
+      campo.addEventListener('input', () => {
+        campo.value = campo.value.replace(regexSoloLetras, '');
+      });
+    }
+
+    // Campos de solo números
+    if (
+      nombre.includes('telefono') ||
+      nombre.includes('celular')
+    ) {
+      campo.addEventListener('input', () => {
+        campo.value = campo.value.replace(regexSoloNumeros, '');
+      });
+    }
+  });
+</script>
+{% endblock %}

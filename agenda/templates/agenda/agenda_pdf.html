@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Agenda - {{ agenda.estudiante }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+        
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 3px;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #e1e8ed;
+            border-radius: 5px;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .info-grid {
+            display: block;
+            width: 100%;
+        }
+        
+        .info-row {
+            margin-bottom: 5px;
+            page-break-inside: avoid;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #34495e;
+            display: inline-block;
+            width: 160px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            display: inline-block;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+            margin-top: 8px;
+            page-break-inside: auto;
+        }
+        
+        .table th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            padding: 6px 4px;
+            text-align: left;
+            border: 1px solid #2980b9;
+        }
+        
+        .table td {
+            padding: 4px;
+            border: 1px solid #e1e8ed;
+            vertical-align: top;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .programada { background: #fff3cd; color: #856404; }
+        .asistio { background: #d1ecf1; color: #0c5460; }
+        .ausente { background: #f8d7da; color: #721c24; }
+        .justificada { background: #ffeaa7; color: #e17055; }
+        
+        .progress-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .progress-excelente { background: #27ae60; }
+        .progress-bueno { background: #3498db; }
+        .progress-regular { background: #f39c12; }
+        .progress-bajo { background: #e74c3c; }
+        
+        .footer {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 8px;
+            padding-top: 10px;
+        }
+        
+        .stats-grid {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            display: inline-block;
+            width: 30%;
+            margin-right: 3%;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card:last-child {
+            margin-right: 0;
+        }
+        
+        .stat-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            font-size: 8px;
+            color: #7f8c8d;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-small {
+            font-size: 7px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo-text {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo/Encabezado -->
+    <div class="logo">
+        <div class="logo-text">CENTRO DE EDUCACIÓN ESPECIAL "ADAPTACIÓN INFANTIL"</div>
+    </div>
+
+    <!-- Encabezado -->
+    <div class="header">
+        <div class="title">DETALLE DE AGENDA - PROGRAMA DE APOYO</div>
+        <div class="subtitle">Documento generado el: {% now "d/m/Y H:i" %}</div>
+    </div>
+
+    <!-- Información del Estudiante -->
+    <div class="section">
+        <div class="section-title">👤 INFORMACIÓN DEL ESTUDIANTE</div>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Nombre completo:</span>
+                <span class="info-value">{{ agenda.estudiante.nombres }} {{ agenda.estudiante.apellido_paterno }} {{ agenda.estudiante.apellido_materno }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Cédula de Identidad:</span>
+                <span class="info-value">{{ agenda.estudiante.documento_identidad }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Código RUDE:</span>
+                <span class="info-value">{{ agenda.estudiante.codigo_rude }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fecha de Nacimiento:</span>
+                <span class="info-value">{{ agenda.estudiante.fecha_nacimiento|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Edad:</span>
+                <span class="info-value">{{ agenda.estudiante.edad }} años</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Género:</span>
+                <span class="info-value">
+                    {% if agenda.estudiante.genero == 'M' %}Masculino{% else %}Femenino{% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Programas de Apoyo:</span>
+                <span class="info-value">
+                    {% for programa in agenda.estudiante.programa_apoyo %}
+                        {{ programa }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        No asignado
+                    {% endfor %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Evaluación Requerida:</span>
+                <span class="info-value">
+                    {% if agenda.estudiante.evaluacion_requerida and agenda.estudiante.evaluacion_requerida != 'Ninguna' %}
+                        {{ agenda.estudiante.evaluacion_requerida }}
+                    {% else %}
+                        Ninguna
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuración de la Agenda -->
+    <div class="section">
+        <div class="section-title">⏰ CONFIGURACIÓN DE LA AGENDA</div>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Día de la semana:</span>
+                <span class="info-value">{{ agenda.get_dia_semana_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Horario:</span>
+                <span class="info-value">{{ agenda.hora_inicio|time:"H:i" }} - {{ agenda.hora_fin|time:"H:i" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fecha de inicio:</span>
+                <span class="info-value">{{ agenda.fecha_inicio|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Estado:</span>
+                <span class="info-value">
+                    {% if agenda.activo %}
+                        <strong style="color: #27ae60;">ACTIVA</strong>
+                    {% else %}
+                        <strong style="color: #e74c3c;">INACTIVA</strong>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fecha de creación:</span>
+                <span class="info-value">{{ agenda.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="section">
+        <div class="section-title">📊 ESTADÍSTICAS DE PROGRESO</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ agenda.sesiones_completadas }}/24</div>
+                <div class="stat-label">Sesiones Completadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if promedio_progreso %}
+                        {{ promedio_progreso|floatformat:1 }}/10
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <div class="stat-label">Promedio de Progreso</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if agenda.sesiones_completadas > 0 %}
+                        {% widthratio agenda.sesiones_completadas 24 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Porcentaje Completado</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sesiones Programadas -->
+    <div class="section">
+        <div class="section-title">📅 SESIONES PROGRAMADAS (Total: {{ sesiones|length }})</div>
+        
+        {% if sesiones %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="12%">Fecha</th>
+                    <th width="10%">Estado</th>
+                    <th width="8%">Progreso</th>
+                    <th width="35%">Observaciones</th>
+                    <th width="35%">Justificación</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sesion in sesiones %}
+                <tr>
+                    <td class="text-center">{{ sesion.fecha_programada|date:"d/m/Y" }}</td>
+                    <td class="text-center">
+                        <span class="status-badge {{ sesion.estado }}">
+                            {{ sesion.get_estado_display }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if sesion.progreso %}
+                            <span class="progress-badge 
+                                {% if sesion.progreso >= 8 %}progress-excelente
+                                {% elif sesion.progreso >= 6 %}progress-bueno
+                                {% elif sesion.progreso >= 4 %}progress-regular
+                                {% else %}progress-bajo
+                                {% endif %}">
+                                {{ sesion.progreso }}/10
+                            </span>
+                        {% else %}
+                            <span class="text-small" style="color: #7f8c8d;">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-small">
+                        {% if sesion.observaciones %}
+                            {{ sesion.observaciones|truncatewords:15 }}
+                        {% else %}
+                            <span style="color: #7f8c8d;">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-small">
+                        {% if sesion.justificacion %}
+                            {{ sesion.justificacion|truncatewords:15 }}
+                        {% else %}
+                            <span style="color: #7f8c8d;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center" style="padding: 20px; color: #7f8c8d;">
+            No hay sesiones programadas para esta agenda.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer para PDF -->
+    <div id="footerContent" class="footer">
+        <strong>Centro de Educación Especial "Adaptación Infantil"</strong><br/>
+        COD. SIE: 80730696 • 18 DDELP-2 • R.A. 1753/2021
+    </div>
+</body>
+</html>

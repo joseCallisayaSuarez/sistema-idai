@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Panel Administrador - IDAI{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Bienvenido, {{ request.user.username }} (Administrador)</h1>
+    <p class="mb-4">Desde aquí puedes gestionar a todos los usuarios del sistema.</p>
+
+    <div class="overflow-x-auto bg-white rounded shadow">
+        <table id="usuariosTabla" class="min-w-full divide-y divide-gray-200 text-center">
+            <thead class="bg-blue-900 text-white">
+                <tr>
+                    <th class="px-4 py-2">Usuario</th>
+                    <th class="px-4 py-2">Correo</th>
+                    <th class="px-4 py-2">Rol</th>
+                    <th class="px-4 py-2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for u in usuarios %}
+                <tr class="hover:bg-blue-100">
+                    <td class="px-4 py-2">{{ u.username }}</td>
+                    <td class="px-4 py-2">{{ u.email }}</td>
+                    <td class="px-4 py-2">{{ u.rol }}</td>
+                    <td class="px-4 py-2">
+                        <a href="{% url 'eliminar_usuario' u.id %}" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">Eliminar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-4 py-2">No hay usuarios registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{% url 'register' %}" class="mt-4 inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Crear una cuenta</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#usuariosTabla').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        language: {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resultado Restauración - Backup{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+    <!-- Header -->
+    <div class="border-b-2 {% if exitoso %}border-green-200{% else %}border-yellow-200{% endif %} pb-4 mb-6">
+        <h1 class="text-2xl font-bold {% if exitoso %}text-green-700{% else %}text-yellow-700{% endif %}">
+            {% if exitoso %}✅{% else %}⚠️{% endif %} Restauración Completada
+        </h1>
+        <p class="text-gray-600">Archivo: <strong>{{ nombre_archivo }}</strong></p>
+        <p class="text-gray-600">Tipo: <strong>{{ tipo_restauracion|capfirst }}</strong></p>
+    </div>
+
+    <!-- Resultados -->
+    <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Resultados de la Restauración</h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                <div class="text-blue-600 font-bold text-2xl">{{ estadisticas.apps_procesadas }}</div>
+                <div class="text-blue-800">Apps Procesadas</div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
+                <div class="text-green-600 font-bold text-2xl">{{ estadisticas.modelos_procesados }}</div>
+                <div class="text-green-800">Modelos Procesados</div>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 text-center">
+                <div class="text-purple-600 font-bold text-2xl">{{ estadisticas.registros_creados }}</div>
+                <div class="text-purple-800">Registros Creados</div>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200 text-center">
+                <div class="text-orange-600 font-bold text-2xl">{{ estadisticas.registros_actualizados }}</div>
+                <div class="text-orange-800">Registros Actualizados</div>
+            </div>
+        </div>
+        
+        {% if estadisticas.registros_eliminados %}
+        <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
+            <div class="flex items-center">
+                <span class="text-red-600 mr-2">🗑️</span>
+                <span class="font-bold text-red-700">Registros eliminados: {{ estadisticas.registros_eliminados }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Errores (si los hay) -->
+    {% if estadisticas.errores %}
+    <div class="mb-8">
+        <h3 class="text-lg font-bold text-red-700 mb-3">❌ Errores Encontrados</h3>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-h-64 overflow-y-auto">
+            <ul class="text-red-700 space-y-1">
+                {% for error in estadisticas.errores %}
+                <li class="text-sm p-2 bg-red-100 rounded">• {{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">
+            Nota: Algunos errores pueden no afectar el funcionamiento general del sistema.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Recomendaciones -->
+    <div class="mb-8">
+        <h3 class="text-lg font-bold text-blue-700 mb-3">🔍 Verificar la Restauración</h3>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <ul class="text-blue-700 space-y-2">
+                <li class="flex items-start">
+                    <span class="mr-2">1.</span>
+                    <span>Revisa que los estudiantes hayan sido restaurados correctamente</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2">2.</span>
+                    <span>Verifica las sesiones en el calendario</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2">3.</span>
+                    <span>Comprueba que puedas acceder con tu usuario</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2">4.</span>
+                    <span>Si encuentras problemas, puedes restaurar desde otro backup</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex justify-between border-t border-gray-200 pt-6">
+        <a href="{% url 'agenda:calendario_general' %}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold">
+            📅 Ir al Calendario
+        </a>
+        
+        <div class="space-x-4">
+            <a href="{% url 'backups:dashboard' %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold">
+                💾 Volver a Backups
+            </a>
+            
+            <a href="{% url 'estudiantes:lista_estudiantes' %}" 
+               class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold">
+                👥 Ver Estudiantes
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mostrar alerta si hay muchos errores
+{% if estadisticas.errores|length > 10 %}
+alert('⚠️ Se encontraron {{ estadisticas.errores|length }} errores durante la restauración. Revisa la sección de errores.');
+{% endif %}
+
+// Actualizar automáticamente después de 5 segundos (para ver datos frescos)
+setTimeout(() => {
+    window.location.href = "{% url 'agenda:calendario_general' %}";
+}, 5000);
+</script>
+{% endblock %}

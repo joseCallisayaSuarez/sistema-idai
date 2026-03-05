@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Registrar nuevo usuario D.A</title>
+<style>
+body { 
+    font-family: "Helvetica", Arial, sans-serif; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+    background: linear-gradient(135deg, #a0c4ff, #ffc6c6); 
+    margin:0; 
+}
+.register-box { 
+    border-radius:12px; 
+    width:340px; 
+    padding:40px 30px; 
+    background:linear-gradient(135deg,#d9eaff,#ffe5e5); 
+    box-shadow:0 8px 20px rgba(0,0,0,0.15); 
+}
+.register-box h2 { 
+    text-align:center; 
+    color:#1a2a4f; 
+    margin-bottom:30px; 
+    font-weight:bold; 
+    font-size:24px; 
+}
+.input-group {
+    margin: 10px 0;
+    position: relative;
+}
+.input-group input { 
+    width:100%; 
+    padding:12px 35px; 
+    border-radius:6px; 
+    border:1px solid #80bfff; 
+    font-size:14px;
+    box-sizing:border-box;
+}
+.input-group i {
+    position: absolute;
+    left:10px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#1a2a4f;
+}
+.register-box button { 
+    width:100%; 
+    padding:14px; 
+    background-color:#154c84ff; 
+    color:white; 
+    border:none; 
+    border-radius:6px; 
+    cursor:pointer; 
+    font-size:16px; 
+    font-weight:bold; 
+    margin-top:10px;
+    transition: background-color 0.3s ease;
+}
+.register-box button:hover { 
+    background-color:#ef2d2dff; 
+}
+.links { 
+    margin-top:10px; 
+    text-align:center; 
+}
+.links a { 
+    color:#1a2a4f; 
+    text-decoration:none; 
+    font-weight:bold; 
+}
+.links a:hover { 
+    color:#ff9999; 
+}
+.error {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+}
+</style>
+</head>
+<body>
+<div class="register-box">
+    <h2>Registrar nuevo usuario D.A</h2>
+
+    {% if form.errors %}
+        <p class="error">Por favor corrige los errores</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Usuario -->
+        <div class="input-group">
+            <i>👤</i>
+            <input type="text" name="username" placeholder="Usuario" required>
+        </div>
+
+        <!-- Correo electrónico -->
+        <div class="input-group">
+            <i>📧</i>
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="input-group">
+            <i>🔒</i>
+            <input type="password" name="password1" placeholder="Contraseña" required>
+        </div>
+
+        <!-- Confirmar contraseña -->
+        <div class="input-group">
+            <i>🔒</i>
+            <input type="password" name="password2" placeholder="Confirmar contraseña" required>
+        </div>
+
+        <button type="submit">Registrarse</button>
+    </form>
+
+    <div class="links">
+        <a href="{% url 'login' %}">Ya tengo cuenta</a>
+    </div>
+</div>
+</body>
+</html>
