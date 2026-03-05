@@ -9,7 +9,7 @@ from agenda.models import Sesion
 from django.utils import timezone
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from xhtml2pdf import pisa
+
 from io import BytesIO
 
 

@@ -8,7 +8,7 @@ from .models import InformeFinal, AreaDesarrollo, DesarrolloEducativo
 from .forms import InformeFinalForm, DesarrolloEducativoFormSet
 from estudiantes.models import Estudiante
 from django.template.loader import render_to_string
-from xhtml2pdf import pisa
+
 from io import BytesIO
 import json
 import os

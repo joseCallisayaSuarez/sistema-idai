@@ -7,7 +7,7 @@ from .forms import BuscarEstudianteForm, AgendaForm, SesionForm, AsistenciaForm
 from estudiantes.models import Estudiante
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from xhtml2pdf import pisa
+
 from io import BytesIO
 import os
 import base64
